@@ -50,9 +50,13 @@ export function containsPrivateAddress(text: string): boolean {
   return norm(text).includes(norm(OWNER_PRIVATE.homeAddress)) || STREET.test(text);
 }
 
+// A sentence that turns a price down ("$10 is too low", "my minimum is $90") does not commit to it.
+const DECLINES = /\b(too low|can'?t|cannot|can not|won'?t|wouldn'?t|not (?:able|possible|going)|lowest|minimum|at least|firm|decline|below (?:my|the|our))\b/i;
+
 /** Dollar amounts below the seller's floor that the message would commit to. */
 export function belowFloor(args: Record<string, unknown>): number[] {
-  const amounts = [...outgoingText(args).matchAll(/\$\s?(\d+(?:\.\d{1,2})?)/g)].map((m) => Number(m[1]));
+  const sentences = outgoingText(args).split(/(?<=[.!?\n])\s+/).filter((x) => !DECLINES.test(x));
+  const amounts = sentences.flatMap((x) => [...x.matchAll(/\$\s?(\d+(?:\.\d{1,2})?)/g)].map((m) => Number(m[1])));
   if (typeof args.acceptPriceUsd === "number") amounts.push(args.acceptPriceUsd);
   return amounts.filter((a) => a < LISTING.floorUsd);
 }
