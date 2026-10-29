@@ -63,7 +63,9 @@ export function demoPlan(prompt: string, day: number): Plan {
 }
 
 function plannerPrompt(): string {
-  const tools = toolCatalog().map((t) => `- ${t.name} [${t.risk}${t.riskCost ? `, ${t.riskCost} risk pts` : ""}]: ${t.description}`).join("\n");
+  // Skill-internal tools need learned parameters (rules, templates); only the skill executor uses them.
+  const SKILL_ONLY = new Set(["triage.rules", "summarize.extractive", "draft.template"]);
+  const tools = toolCatalog().filter((t) => !SKILL_ONLY.has(t.name)).map((t) => `- ${t.name} [${t.risk}${t.riskCost ? `, ${t.riskCost} risk pts` : ""}]: ${t.description}`).join("\n");
   return `You are Noctua's planner. Build a plan using ONLY these tools:\n${tools}\n
 Rules: tools act on a shared context (inbox.list loads messages; triage tools label them; digest.compose writes the digest). Use {} as args unless the tool needs arguments (mail.send needs to/subject/body).
 If the request cannot be done with these tools, return supported=false and no steps.

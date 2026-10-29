@@ -113,7 +113,8 @@ export function findSkillFor(prompt: string): { skill: Skill; overlap: number; s
 type TaskRow = { id: string; prompt: string; workspace_day: number; result_json: string; intent_key: string; tier: string; status: string };
 
 const ProposedRules = z.object({
-  rules: z.array(z.object({ category: z.enum(["urgent", "needs_reply", "routine", "fyi"]), keywords: z.array(z.string()).max(30) })).min(1).max(4),
+  // Generous bounds on the raw proposal; it is trimmed to the tool schema (30 keywords) below.
+  rules: z.array(z.object({ category: z.enum(["urgent", "needs_reply", "routine", "fyi"]), keywords: z.array(z.string().max(60)).max(200) })).min(1).max(8),
   name: z.string().min(3).max(80).optional(),
 });
 
@@ -200,7 +201,7 @@ export async function learnFromTask(taskId: string, opts: LearnOptions): Promise
     security: { maxRisk: "local", irreversibleActions: "forbidden", requiredGuards: ["guard.injection_scan"] },
     fixtures: { traceExamples: examples.map((x) => ({ emailId: x.email.id, day: x.day, expected: x.category })), goldenSet: "golden-v1" },
     acceptance: { minTraceAgreement: 0.9, minGoldenAccuracy: 0.85, urgentRecall: 1, suspiciousRecall: 1 },
-    provenance: { sourceTaskIds, synthesizedBy, createdAt: nowIso() },
+    provenance: { sourceTaskIds, synthesizedBy: synthesizedBy.slice(0, 120), createdAt: nowIso() },
   };
   return insertSkill(manifest, synthesizedBy + (calls ? ` · ${calls} model call(s)` : ""));
 }

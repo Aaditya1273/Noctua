@@ -188,3 +188,13 @@ test("re-verifying a demoted skill replays the inbox that broke it, so it cannot
   assert.equal(reg.passed, false);
   assert.match(report.outcome, /has not been promoted/);
 });
+
+test("a long synthesis note never breaks skill creation", async () => {
+  freshDemo();
+  const t1 = await runTask({ prompt: PROMPT, day: 1, route: "auto" });
+  const s = await learnFromTask(t1.taskId, { drafting: "template" });
+  const m = structuredClone(s.manifest);
+  m.version = 50;
+  m.provenance.synthesizedBy = "x".repeat(500).slice(0, 120);
+  assert.equal(insertSkill(m, "y".repeat(500)).version, 50);
+});
