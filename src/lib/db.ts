@@ -57,7 +57,7 @@ export function db(): DatabaseSync {
   const file = getConfig().dbPath;
   if (file !== ":memory:") fs.mkdirSync(path.dirname(file), { recursive: true });
   const d = new DatabaseSync(file);
-  d.exec("PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 5000; PRAGMA foreign_keys = ON;");
+  d.exec("PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL; PRAGMA busy_timeout = 5000; PRAGMA foreign_keys = ON;");
   d.exec(SCHEMA);
   instance = d;
   return d;
