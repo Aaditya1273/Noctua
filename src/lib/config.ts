@@ -33,7 +33,7 @@ function parsePricing(raw: string): Record<string, Pricing> {
 }
 
 export function getConfig() {
-  const model = str("NEBIUS_MODEL", "nvidia/Nemotron-3_5-Lightning");
+  const model = str("NEBIUS_MODEL", "nvidia/nemotron-3-super-120b-a12b");
   return {
     apiKey: str("NEBIUS_API_KEY"),
     baseUrl: str("NEBIUS_BASE_URL", "https://api.tokenfactory.nebius.com/v1").replace(/\/+$/, ""),
@@ -43,6 +43,8 @@ export function getConfig() {
       reasoning: str("NEBIUS_MODEL_REASONING", model),
     },
     jsonMode: str("NEBIUS_JSON_MODE", "true") !== "false",
+    // Nemotron 3 models reason by default and can spend the whole output budget on hidden thinking tokens.
+    disableThinking: str("NEBIUS_DISABLE_THINKING", "true") !== "false",
     timeoutMs: num("NEBIUS_TIMEOUT_MS", 45_000),
     maxRetries: Math.min(num("NEBIUS_MAX_RETRIES", 2), 5),
     maxOutputTokens: num("NEBIUS_MAX_OUTPUT_TOKENS", 2048),
@@ -60,6 +62,14 @@ export function getConfig() {
 }
 
 export type Config = ReturnType<typeof getConfig>;
+
+/** Human-readable provider name derived from the configured base URL — receipts must name the real provider. */
+export function providerName(cfg: Config = getConfig()): string {
+  const host = (() => { try { return new URL(cfg.baseUrl).hostname; } catch { return cfg.baseUrl; } })();
+  if (host.endsWith("nebius.com")) return "Nebius Token Factory";
+  if (host.endsWith("nvidia.com")) return "NVIDIA API Catalog (build.nvidia.com)";
+  return host;
+}
 
 export function isLive(cfg: Config = getConfig()): boolean {
   return cfg.apiKey.length > 0;

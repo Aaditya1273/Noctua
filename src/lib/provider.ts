@@ -1,4 +1,4 @@
-// Nebius Token Factory client (OpenAI-compatible chat completions). Server-side only.
+// OpenAI-compatible chat client (Nebius Token Factory by default; any compatible base URL works). Server-side only.
 import { getConfig, type Config } from "./config.ts";
 
 export type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
@@ -83,6 +83,7 @@ export async function chatCompletion(req: CompletionRequest, cfg: Config = getCo
         temperature: req.temperature ?? 0,
       };
       if (req.json && cfg.jsonMode) body.response_format = { type: "json_object" };
+      if (cfg.disableThinking) body.chat_template_kwargs = { enable_thinking: false };
       const data = (await request(cfg, "/chat/completions", { method: "POST", body: JSON.stringify(body) })) as {
         model?: string;
         choices?: { message?: { content?: unknown } }[];
