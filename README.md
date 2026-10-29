@@ -132,7 +132,7 @@ docker build -t noctua .
 docker run -p 3000:3000 -v noctua-data:/data --env-file .env.local noctua
 ```
 
-The image is built from Next's `standalone` output. The standalone server was verified in this workspace, but **the Docker image itself was not built here, because no Docker daemon was running**. Build it once before relying on it. The SQLite database and signing key live on the `/data` volume. Do not deploy to a platform with an ephemeral filesystem without mounting persistent storage. Set `NOCTUA_BASIC_AUTH=user:password` before exposing the app beyond localhost; without it anyone who can reach the server can run tasks and approve actions.
+The image is built from Next's `standalone` output. This image is what the live demo runs: Render builds and serves it from this repository. The SQLite database and signing key live on the `/data` volume. Do not deploy to a platform with an ephemeral filesystem without mounting persistent storage. Set `NOCTUA_BASIC_AUTH=user:password` before exposing the app beyond localhost; without it anyone who can reach the server can run tasks and approve actions.
 
 ## The two-minute walkthrough
 
