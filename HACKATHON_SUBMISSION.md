@@ -1,10 +1,14 @@
 # Noctua — Hackathon submission draft
 
-**Tagline:** Your personal AI gets more efficient with every repeated task — without surrendering control.
+**Tagline:** The always-on personal agent on NVIDIA Nemotron that gets cheaper with every repeated task, and can't be talked into a bad deal or into giving out your address.
 
 **Track:** Personal AI
 
 ## Problem
+
+This autumn always-on agents went mainstream, and so did their failure modes. In September an agent running a
+Marketplace listing accepted a $10 offer and sent a stranger the seller's home address (reported by The Guardian
+and Fortune). Commercial always-on agents also sit behind subscriptions such as ChatGPT Pro at $100 to $500 a month.
 
 Personal agents re-reason the same chores daily, paying for identical inference, and they act on whatever text they
 read — a single poisoned email can turn them against their owner. Cheaper models and memory plugins don't change
@@ -46,12 +50,23 @@ is shown as Unknown and disables the monetary cap rather than guessing.
 
 ## Demonstrated impact (live run on Nebius Token Factory, 2026-10-29 — `eval/results.json`)
 
-On an identical seven-run sequence, Noctua made **14 model calls instead of 21** (learning included), completed
-**4 of 7 runs with no model call**, missed **0 urgent messages**, and caught both cases where a learned skill would
-have been wrong (demoting it and re-running with full reasoning). A full-reasoning run cost about $0.001; a
-graduated Master run costs $0 and takes ~2 ms. Over just seven runs the measured spend was $0.0064 vs $0.0070,
-because learning and fallbacks are counted; every further repetition saves the full Apprentice cost.
-Attack Night including a live-model test: **9/9** blocked.
+- **Cheaper with use:** on an identical seven-run sequence Noctua made **9 model calls instead of 15** and spent
+  **$0.0040 instead of $0.0057** (learning included), with **4 of 7 runs making no model call**. A full-reasoning run
+  costs about $0.0008; a graduated repeat costs $0.
+- **Safe by construction:** **0 urgent messages missed**; both cases where a learned skill would have been wrong were
+  caught and re-run with full reasoning. Attack Night: **10/10** blocked.
+- **The Muse Replay:** the reported Marketplace failure, replayed with synthetic data. The $10 lowball is blocked
+  (P14 below-floor), the home address is blocked (P13 private-data), and Noctua's own reply waits for approval and goes
+  out labelled "Sent by Noctua".
+- **Honest price comparison** (in the app and on the landing page): model cost for this task is fractions of a cent per
+  first run and $0 per repeat. For reference, ChatGPT Pro, which dots requires, is $100–500 a month. That covers hosted
+  compute and much more, so it is labelled as not like-for-like.
+
+## Roadmap
+
+- **OpenClaw and Hermes plugin:** package the router, policy engine and budgets as an agent-host plugin (the same shape
+  as NVIDIA's `nemo-relay-openclaw`) so any OpenClaw agent gets receipts, bound approvals and graduation. Not built yet.
+- More money-saving skills with the same approval rules; real Gmail and Marketplace connectors behind the same policy.
 
 ## Links
 
@@ -78,6 +93,9 @@ From actual use during this build (2026-10-29):
   participants (including in India, where many students have only RuPay cards) report this in the Devpost forum. A
   card-free path for promo credits, or a hard spending cap at the promo amount, would remove a real barrier.
 - 💡 A machine-readable price list next to `/models` would let apps price calls without hardcoding rates.
+- 💡 We built the Muse Replay as a small, deterministic test suite for always-on agents (lowball acceptance, address
+  disclosure, safe reply still requires approval). Shipping something like it as a standard check for Personal AI
+  projects on Token Factory would make safety claims comparable across submissions.
 
 ## Checklist before submitting
 

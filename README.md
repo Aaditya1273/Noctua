@@ -2,7 +2,7 @@
 
 **Live demo:** https://noctua-gkbv.onrender.com (free instance: the first load after idle can take up to a minute)
 
-**Your personal AI gets more efficient with every repeated task — without surrendering control.**
+**The always-on personal agent that gets cheaper with every repeated task, and can't be talked into a bad deal or into giving out your address.**
 
 Noctua is a personal agent that learns which of your recurring tasks can become **verified, deterministic workflows**. The first time you ask for something, an NVIDIA Nemotron model (served by Nebius Token Factory) plans and executes it with allowlisted tools. When a task repeats, Noctua turns the run into a candidate *skill*, tests it against fixed fixtures and attacks, and promotes it only if every mandatory check passes. After that, the same request runs **without calling the model**. Every run comes with a receipt. A skill that breaks at run time is demoted automatically, and the task is re-run with full reasoning.
 
@@ -150,7 +150,10 @@ inline cards, and every next step is one click.
 3. Ask *"Review today's inbox and send a reply to Priya confirming Thursday works."* The `mail.send` card waits for
    **Approve**. Approval re-checks recipient, risk budget and exact arguments, then writes to a local outbox (nothing
    is delivered).
-4. Click **Attack Night** in the composer or the side panel: eight adversarial cases run against the real engine.
+4. Click **Muse Replay**. It replays the reported Marketplace incident (a $10 lowball and a request for the seller's
+   address) against the policy engine: both are blocked (P14 below-floor, P13 private-data). Noctua then handles the
+   same listing itself, drafts a safe reply and waits for approval; the sent message carries "Sent by Noctua".
+5. Click **Attack Night** in the composer: ten adversarial cases run against the real engine.
 
 The tabs (Skills, Security, Receipts, Memory) hold the full detail. Their live badges show verified skills,
 the last Attack Night score and today's spend. The timed version is in [DEMO_SCRIPT.md](DEMO_SCRIPT.md).
@@ -160,7 +163,7 @@ the last Attack Night score and today's spend. The timed version is in [DEMO_SCR
 ```bash
 npm run typecheck
 npm run lint
-npm test              # 27 tests: engine, policy, lifecycle, plus live-path tests against a local mock of the Token Factory API
+npm test              # 33 tests: engine, policy, lifecycle, plus live-path tests against a local mock of the Token Factory API
 npm run eval          # writes eval/results.json
 npm run smoke:live    # only with NEBIUS_API_KEY; otherwise prints SKIPPED
 ```
@@ -181,6 +184,14 @@ Measured results and methodology are in [EVALUATION.md](EVALUATION.md).
 | Inbox, web page, contacts | **Synthetic sample data** (`.example` domains). No Gmail, Telegram or web-search integration exists |
 | `mail.send` / `mail.forward` | Write to a local outbox only. `data.delete` and `payment.transfer` are always denied |
 | Nebius Serverless, NemoClaw, OpenShell, Tavily | **Not used.** The policy engine is Noctua's own |
+
+## Roadmap
+
+- **OpenClaw and Hermes plugin.** Package the router, the policy engine and the budgets as an agent-host plugin, the
+  same shape as NVIDIA's `nemo-relay-openclaw` observability plugin, so any OpenClaw agent gets receipts,
+  approvals bound to exact arguments, and graduation. Not built yet.
+- More money-saving skills with the same approval rules: invoice chasing, subscription audits, bill-increase alerts.
+- Real connectors (Gmail, Marketplace) behind the same policy path.
 
 ## Known limitations
 

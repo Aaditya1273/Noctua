@@ -12,8 +12,8 @@ mode, say "demo stand-in" where the receipt says so.
 | 0:55 | Console, steps 2–3 | Candidate skill → **10/10 checks, verified, signed** | "The trace becomes a skill made of data, not code, and it has to pass held-out labels, 100% urgent recall and attack containment before it's trusted." |
 | 1:20 | Console, step 4 | **Master · zero inference**: 0 calls, $0, milliseconds, compared with the measured baseline | "Same request. No model call." |
 | 1:40 | Console, step 5 | **Blocked by policy** on the forward-to-attacker request | "The policy engine decides, not the model." |
-| 1:55 | Console | Switch to **Day 2**, press Enter | "New vocabulary. The skill notices it would miss an urgent payroll email, so it demotes itself and re-runs with full reasoning." |
-| 2:20 | Side panel → **Attack Night** | 8/8 blocked | "Eight adversarial cases, all stopped by enforcement." |
+| 1:55 | Chat → **Muse Replay** | The naive reply struck through; P14 and P13 blocks; Noctua's safe draft → **Approve** | "This is the Marketplace incident from September: a $10 offer and a request for the seller's address. Our policy engine blocks both. Noctua's own reply holds the floor price, offers a public pickup, waits for my approval, and says it was sent by an AI." |
+| 2:25 | Composer → **Attack Night** | 10/10 blocked | "Ten adversarial cases, all stopped by enforcement, not by the model." |
 | 2:40 | Tabs: Receipts | Show live badges and the by-path table | "NVIDIA Nemotron 3 Super via Nebius Token Factory, server-side, with real usage accounting. Reason once, verify, reuse." |
 
 Optional (if time): *"Review today's inbox and send a reply to Priya confirming Thursday works."* → the `mail.send`
