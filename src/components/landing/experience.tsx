@@ -214,8 +214,10 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
         tl.from(q("[data-muse-buyer]"), { y: 30, opacity: 0, scale: 0.94, stagger: 0.5, duration: 0.6 })
           .from(q("[data-muse-naive]"), { y: 30, opacity: 0, scale: 0.94, duration: 0.6 }, "+=0.4")
           .from(q("[data-muse-sent]"), { opacity: 0, duration: 0.3 })
-          .to(q("[data-muse-phone]"), { x: 8, duration: 0.08, repeat: 5, yoyo: true, ease: "none" }, "+=0.1")
-          .to(q("[data-muse-naive] > p"), { opacity: 0.35, duration: 0.4 }, "+=0.6")
+          .from(q("[data-muse-harm]"), { y: 16, opacity: 0, scale: 0.96, duration: 0.5, ease: "back.out(1.6)" }, "+=0.2")
+          .to(q("[data-muse-phone]"), { x: 8, duration: 0.08, repeat: 5, yoyo: true, ease: "none" })
+          .to(q("[data-muse-harm]"), { opacity: 0, height: 0, marginTop: 0, paddingTop: 0, paddingBottom: 0, duration: 0.45, ease: "power2.inOut" }, "+=0.9")
+          .to(q("[data-muse-naive] > p"), { opacity: 0.35, duration: 0.4 }, "<")
           .to(q("[data-muse-sent]"), { opacity: 0, duration: 0.2 }, "<")
           .from(q("[data-muse-stamp]"), { scale: 2.4, opacity: 0, rotation: (i) => (i ? 30 : -30), duration: 0.5, ease: "back.out(2)", stagger: 0.45 })
           .to(q("[data-muse-naive]"), { height: 0, marginTop: 0, opacity: 0, duration: 0.6, ease: "power2.inOut" }, "+=0.8")
@@ -368,14 +370,17 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
             <div>
               <p className="font-sans text-[13px] font-semibold uppercase tracking-[0.2em] text-muted">the muse test</p>
               <h2 className="mt-4 text-[clamp(2.3rem,5.2vw,4.8rem)] font-black lowercase leading-[0.9] tracking-[-0.058em]">
-                an agent sold a desk for <em className="font-italic font-normal not-italic [font-style:italic]">$10</em> and gave out a home address.
+                an agent told a stranger <em className="font-italic font-normal not-italic [font-style:italic]">where you live.</em>
               </h2>
-              <p className="mt-5 max-w-md font-sans text-[15px] leading-relaxed text-muted">
-                Reported in September by <a className="underline hover:text-ink" href="https://www.theguardian.com/technology/2026/sep/28/metas-ai-agent-muse-home-address">The Guardian</a> and{" "}
-                <a className="underline hover:text-ink" href="https://fortune.com/2026/10/19/meta-muse-ai-agent-facebook-marketplace-home-address-privacy/">Fortune</a>. Replayed here with synthetic data against Noctua&apos;s real policy engine.
+              <p className="mt-5 max-w-md font-sans text-[15.5px] leading-relaxed text-ink-2">
+                In September an always-on agent running a Marketplace listing accepted a lowball offer, gave out the seller&apos;s home address and sent the buyer to his house, as reported by{" "}
+                <a className="underline hover:text-ink" href="https://www.theguardian.com/technology/2026/sep/28/metas-ai-agent-muse-home-address">The Guardian</a> and{" "}
+                <a className="underline hover:text-ink" href="https://fortune.com/2026/10/19/meta-muse-ai-agent-facebook-marketplace-home-address-privacy/">Fortune</a>.
+                Your agent reads strangers&apos; messages every day. One bad reply is enough.
               </p>
+              <p className="mt-3 max-w-md font-sans text-[13px] text-muted">Replayed here with synthetic data against Noctua&apos;s real policy engine.</p>
               <ol className="mt-10 space-y-4" aria-label="What happens">
-                {["a buyer messages your agent", "a naive agent says yes, and sends your address", "noctua checks every message first", "and sends this instead, after you approve"].map((t, i) => (
+                {["a stranger lowballs you and asks where you live", "a naive agent agrees, and gives out your home address", "noctua blocks it before a single word leaves", "then replies safely, and only after you approve"].map((t, i) => (
                   <li key={t} data-muse-step={i} className="flex items-baseline gap-4 text-[clamp(1.2rem,2vw,1.7rem)] font-extrabold lowercase leading-tight tracking-[-0.03em] text-[#3a3a3a] transition-colors duration-300 data-[on=true]:text-white">
                     <span className="font-sans text-[13px] font-semibold tabular-nums">0{i + 1}</span>{t}
                   </li>
@@ -398,6 +403,10 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
                 <div data-muse-naive className="relative w-fit max-w-[86%]">
                   <p className="rounded-[20px] rounded-bl-[6px] bg-[#f2f2f2] px-4 py-2.5 text-[15px] text-black"><span className="mb-0.5 block text-[11px] font-semibold uppercase tracking-wider text-[#6b6b6b]">naive agent</span>{muse.naive}</p>
                   <span data-muse-sent className="mt-1.5 block text-[12px] text-muted">sent · address shared</span>
+                  <div data-muse-harm className="mt-3 space-y-1.5 rounded-[14px] border-2 border-white bg-black p-3">
+                    <p className="text-[13.5px] font-bold text-white">A stranger is heading to your door.</p>
+                    <p className="text-[13.5px] font-bold text-white">You just lost $110 on the sale.</p>
+                  </div>
                   <span data-muse-stamp="0" className="absolute -right-6 top-1/3 -translate-y-1/2 rotate-[-8deg] rounded-md border-[3px] border-white bg-black px-3 py-1 text-[13px] font-black uppercase tracking-wider text-white">blocked · below floor</span>
                   <span data-muse-stamp="1" className="absolute -left-2 -bottom-7 rotate-[6deg] rounded-md border-[3px] border-white bg-black px-3 py-1 text-[13px] font-black uppercase tracking-wider text-white">blocked · private data</span>
                 </div>
