@@ -194,22 +194,22 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
         const who = q("[data-muse-who]")[0] as HTMLElement | undefined;
         const whoLabel = q("[data-muse-who-label]")[0] as HTMLElement | undefined;
         let whoNow = "careless agent";
+        // Sync the step list and badge from the timeline's own updates (not scroll events): with scrub
+        // smoothing the timeline trails the scroll, so scroll-driven updates would leave stale states.
+        const sync = () => {
+          const t = tl.time(), L = tl.labels;
+          on(t < L.naive ? 0 : t < L.block ? 1 : t < L.safe ? 2 : 3);
+          const next = t < L.block ? "careless agent" : "noctua";
+          if (who && whoLabel && next !== whoNow) {
+            whoNow = next;
+            whoLabel.textContent = next;
+            gsap.fromTo(who, { scale: 0.6, rotation: -8 }, { scale: 1, rotation: 0, duration: 0.8, ease: "elastic.out(1, 0.45)", overwrite: true });
+          }
+        };
         const tl = gsap.timeline({
           defaults: { ease: "power3.out" },
-          scrollTrigger: {
-            trigger: museEl, start: "top top", end: "+=2600", pin: true, scrub: 0.6, invalidateOnRefresh: true,
-            onUpdate: () => {
-              // Steps follow named points in the timeline, so they stay in sync whatever the beat lengths.
-              const t = tl.time(), L = tl.labels;
-              on(t < L.naive ? 0 : t < L.block ? 1 : t < L.safe ? 2 : 3);
-              const next = t < L.block ? "careless agent" : "noctua";
-              if (who && whoLabel && next !== whoNow) {
-                whoNow = next;
-                whoLabel.textContent = next;
-                gsap.fromTo(who, { scale: 0.6, rotation: -8 }, { scale: 1, rotation: 0, duration: 0.8, ease: "elastic.out(1, 0.45)", overwrite: true });
-              }
-            },
-          },
+          onUpdate: sync,
+          scrollTrigger: { trigger: museEl, start: "top top", end: "+=2600", pin: true, scrub: 0.6, invalidateOnRefresh: true },
         });
         tl.from(q("[data-muse-buyer]"), { y: 30, opacity: 0, scale: 0.94, stagger: 0.5, duration: 0.6 })
           // Soft highlight sweeps across the hidden instruction, holds, then wipes away so the email reads normally again.
@@ -373,38 +373,13 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
           </div>
         </section>
 
-        {/* Real problems: proof strip + pinned scroll story */}
-        <section id="muse" className="scroll-mt-10 border-t border-[#161616] px-5 pb-10 pt-28 sm:px-9">
-          <div className="mx-auto max-w-6xl">
-            <p data-rise className="font-sans text-[13px] font-semibold uppercase tracking-[0.2em] text-muted">this already happens</p>
-            <h2 data-rise className="mt-4 max-w-4xl text-[clamp(2.4rem,5.6vw,5.2rem)] font-black lowercase leading-[0.9] tracking-[-0.058em]">
-              ai agents are already <em className="font-italic font-normal not-italic [font-style:italic]">doing damage.</em>
-            </h2>
-            <div className="mt-14 grid gap-4 md:grid-cols-3">
-              {[
-                { what: "An AI agent deleted a company's live database during a code freeze, after being told not to.", src: [["Tom's Hardware", "https://www.tomshardware.com/tech-industry/artificial-intelligence/ai-coding-platform-goes-rogue-during-code-freeze-and-deletes-entire-company-database-replit-ceo-apologizes-after-ai-engine-says-it-made-a-catastrophic-error-in-judgment-and-destroyed-all-production-data"], ["r/technology", "https://www.reddit.com/r/technology/comments/1m70mwe/replits_ceo_apologizes_after_its_ai_agent_wiped_a/"]], fix: "Noctua: nothing that can't be undone happens without your OK." },
-                { what: "“I woke up to a $58 API bill because my AI agent got stuck in a loop.” Another builder reports $4,811 overnight.", src: [["r/LocalLLM", "https://www.reddit.com/r/LocalLLM/comments/1uzy9cf/i_woke_up_to_a_58_api_bill_because_my_ai_agent/"], ["r/Agentic_Marketing", "https://www.reddit.com/r/Agentic_Marketing/comments/1v0fz93/my_ai_agent_racked_up_4811_overnight_from_a_retry/"]], fix: "Noctua: a hard daily spending limit, checked before every single call." },
-                { what: "Hidden text in an ordinary email can steer an AI assistant into forwarding your invoices to an attacker.", src: [["Proofpoint research", "https://www.proofpoint.com/us/blog/email-and-cloud-threats/stop-month-how-threat-actors-weaponize-ai-assistants-indirect-prompt"]], fix: "Noctua: emails are read as text, never followed as orders." },
-              ].map((c, i) => (
-                <article key={i} data-rise className={`flex flex-col rounded-[18px] p-6 ${i === 2 ? "bg-[#f2f2f2] text-black" : "border border-[#262626] bg-[#0f0f0f]"}`}>
-                  <p className="text-[1.3rem] font-extrabold leading-[1.15] tracking-[-0.03em]">{c.what}</p>
-                  <p className={`mt-4 font-sans text-[12.5px] ${i === 2 ? "text-[#555]" : "text-muted"}`}>
-                    source: {c.src.map(([n, u], j) => <span key={u}>{j > 0 && " · "}<a className="underline" href={u}>{n}</a></span>)}
-                  </p>
-                  <p className={`mt-auto pt-6 font-sans text-[14.5px] font-semibold ${i === 2 ? "text-black" : "text-white"}`}>{c.fix}</p>
-                </article>
-              ))}
-            </div>
-            <p data-rise className="mt-8 font-sans text-[15px] text-ink-2">Scroll to watch the third one happen, and what Noctua does instead.</p>
-          </div>
-        </section>
-
-        <section data-muse className="relative border-t border-[#161616]">
+        {/* Real problem: pinned scroll story */}
+        <section id="muse" data-muse className="relative scroll-mt-0 border-t border-[#161616]">
           <div className="mx-auto grid min-h-dvh max-w-6xl items-center gap-10 px-5 py-16 sm:px-9 lg:grid-cols-[1fr_440px] lg:gap-16">
             <div>
               <p className="font-sans text-[13px] font-semibold uppercase tracking-[0.2em] text-muted">one email is enough</p>
               <h2 className="mt-4 text-[clamp(2.2rem,4.8vw,4.4rem)] font-black lowercase leading-[0.9] tracking-[-0.058em]">
-                an email told your ai to <em className="font-italic font-normal not-italic [font-style:italic]">send your invoices away.</em>
+                ai agents are already <em className="font-italic font-normal not-italic [font-style:italic]">doing damage.</em>
               </h2>
               <p className="mt-4 max-w-md font-sans text-[14px] leading-relaxed text-ink-2">
                 A real attack pattern, documented by{" "}
