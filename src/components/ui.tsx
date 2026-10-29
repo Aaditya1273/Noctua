@@ -153,7 +153,7 @@ export function ButtonLink({ href, children, variant = "primary" }: { href: stri
 export function buttonClass(variant: "primary" | "secondary" | "danger" | "ghost" = "primary") {
   const base = "inline-flex h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 text-[13.5px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50";
   return cx(base, {
-    primary: "bg-ink text-paper hover:bg-white shadow-[0_0_0_1px_rgb(255_255_255/0.1),0_8px_30px_-8px_rgb(110_231_183/0.35)]",
+    primary: "bg-ink text-paper hover:bg-white shadow-[0_0_0_1px_rgb(255_255_255/0.1),0_8px_30px_-8px_rgb(255_255_255/0.12)]",
     secondary: "border border-line-strong bg-card text-ink hover:bg-sunk",
     danger: "border border-danger/30 bg-danger-soft text-danger hover:bg-danger/20",
     ghost: "text-ink-2 hover:bg-sunk",
