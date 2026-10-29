@@ -123,28 +123,36 @@ test("provider HTTP 500 and unreachable host are reported, not crashed on", asyn
   }
 });
 
-test("daily call limit: the next task is deferred deterministically before any request", async () => {
+test("daily call limit: the next task falls back to labelled demo mode before any request", async () => {
   const mock = await mockProvider(goodModel);
   try {
     freshLive(mock, { DAILY_MODEL_CALL_LIMIT: "2" });
     assert.equal((await runTask({ prompt: PROMPT, day: 1, route: "auto" })).status, "done");
     const before = mock.calls.length;
     const second = await runTask({ prompt: PROMPT, day: 2, route: "auto" });
-    assert.equal(second.status, "deferred");
-    assert.equal(mock.calls.length, before);
-    assert.match(getTask(second.taskId)!.error!, /budget|limit/i);
+    assert.equal(second.status, "done");
+    assert.equal(mock.calls.length, before, "no request after the cap");
+    const t = getTask(second.taskId)!;
+    assert.equal(t.mode, "demo");
+    assert.equal(t.receipt.modelCalls, 0);
+    assert.ok(t.receipt.standInCalls > 0, "stand-ins are labelled, never claimed as inference");
+    assert.match(t.fallback!, /budget is used up.*demo mode/);
+    assert.equal(t.result!.budgetFallback, true);
   } finally {
     await mock.close();
   }
 });
 
-test("monetary cap blocks a call whose worst-case cost would exceed it", async () => {
+test("monetary cap: a call that could exceed it is never sent; the task finishes in demo mode", async () => {
   const mock = await mockProvider(goodModel);
   try {
     freshLive(mock, { DAILY_BUDGET_USD: "0.0001" });
     const r = await runTask({ prompt: PROMPT, day: 1, route: "auto" });
-    assert.equal(r.status, "deferred");
+    assert.equal(r.status, "done");
     assert.equal(mock.calls.length, 0);
+    const t = getTask(r.taskId)!;
+    assert.equal(t.mode, "demo");
+    assert.match(t.fallback!, /Daily budget would be exceeded.*demo mode/);
   } finally {
     await mock.close();
   }

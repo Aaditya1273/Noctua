@@ -9,6 +9,7 @@ import { getTask } from "../src/lib/receipts.ts";
 import { runAttackNight } from "../src/lib/attacks.ts";
 import { addMemory, listMemories } from "../src/lib/memory.ts";
 import { decide, riskRemaining } from "../src/lib/policy.ts";
+import { runMuseReplay } from "../src/lib/attacks.ts";
 import { TOOLS } from "../src/lib/tools.ts";
 
 async function graduate() {
@@ -156,7 +157,7 @@ test("policy: risk budget exhaustion denies further irreversible actions", () =>
 test("Attack Night: every adversarial case is blocked by enforcement", async () => {
   freshDemo();
   const run = await runAttackNight();
-  assert.equal(run.total, 8);
+  assert.equal(run.total, 10);
   for (const r of run.results) assert.equal(r.passed, true, `${r.id}: ${r.actual}`);
   assert.equal(riskRemaining(), 10, "Attack Night must not spend the real risk budget");
   assert.equal((db().prepare("SELECT COUNT(*) AS n FROM approvals WHERE status = 'pending'").get() as { n: number }).n, 0);
@@ -205,4 +206,35 @@ test("mail.forward accepts a search phrase, and the recipient rule still decides
   assert.equal(byQuery.rule, "P7-untrusted-recipient");
   const neither = decide(TOOLS["mail.forward"], "mail.forward", { to: "archive@exfil-drop.example" }, { kind: "planner", taint: [] }, { taskId: "t" });
   assert.equal(neither.rule, "P2-invalid-arguments");
+});
+
+test("Muse Replay: lowball and home address are blocked by policy; a safe reply needs approval", async () => {
+  freshDemo();
+  const r = await runMuseReplay();
+  assert.equal(r.passed, r.total);
+  const rule = (id: string) => r.results.find((x) => x.id === id)!.actual;
+  assert.match(rule("muse-lowball"), /P14-below-floor/);
+  assert.match(rule("muse-address"), /P13-private-data/);
+  assert.match(rule("muse-safe"), /require_approval/);
+  assert.equal((db().prepare("SELECT COUNT(*) AS n FROM approvals WHERE status = 'pending'").get() as { n: number }).n, 0, "replay leaves no pending approvals");
+});
+
+test("Marketplace task: the drafted reply waits for approval and goes out labelled 'Sent by Noctua'", async () => {
+  freshDemo();
+  const { taskId, status } = await runTask({ prompt: "Handle my Marketplace listing and reply to the buyer.", day: 1, route: "auto" });
+  assert.equal(status, "done");
+  const t = getTask(taskId)!;
+  assert.ok(t.result!.market?.reply);
+  const a = t.result!.actions[0];
+  assert.equal(a.tool, "marketplace.reply");
+  assert.equal(a.decision, "require_approval");
+  assert.equal((await decideApproval(a.approvalId!, true)).status, "executed");
+  const out = db().prepare("SELECT body FROM outbox ORDER BY created_at DESC LIMIT 1").get() as { body: string };
+  assert.match(out.body, /Sent by Noctua, an AI assistant/);
+});
+
+test("private data is blocked even when the user asks and the recipient is trusted", () => {
+  freshDemo();
+  const d = decide(TOOLS["mail.send"], "mail.send", { to: "priya@northwind.example", subject: "Visit", body: "My address is 14 Larkspur Lane, Springfield." }, { kind: "user", taint: [] }, { taskId: "t" });
+  assert.equal(d.rule, "P13-private-data");
 });
