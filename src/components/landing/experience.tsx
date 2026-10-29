@@ -152,23 +152,70 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
         gsap.fromTo(path, { strokeDasharray: len, strokeDashoffset: len }, { strokeDashoffset: 0, duration: 1.3, ease: "power2.out", scrollTrigger: { trigger: path, start: "top 85%" } });
       });
 
-      // 4. Card fan: hovered card straightens, neighbours spread with an elastic ease
+      // 4. Card fan. Scroll: cards fly out of a stacked pile into the fan (scrubbed).
+      //    Hover: the card straightens and lifts; neighbours slide outward along their own tilt.
+      //    Every tween overwrites the last and leaving is debounced, so motion never fights itself.
+      const fan = q("[data-fan]")[0] as HTMLElement | undefined;
+      const slots = q("[data-card-slot]") as HTMLElement[];
       const cards = q("[data-card]") as HTMLElement[];
       const base = cards.map((c) => Number(c.dataset.rot));
-      cards.forEach((card, i) => {
-        gsap.from(card, { y: 160, rotation: base[i] * 3, opacity: 0, duration: 1.1, ease: "back.out(1.4)", delay: i * 0.08, scrollTrigger: { trigger: q("[data-fan]")[0], start: "top 75%" } });
-        card.addEventListener("mouseenter", () => {
-          cards.forEach((other, j) => {
-            const d = j - i;
-            gsap.to(other, d === 0
-              ? { rotation: 0, scale: 1.08, y: -24, x: 0, zIndex: 20, duration: 0.9, ease: "elastic.out(1, 0.5)" }
-              : { x: Math.sign(d) * (120 / Math.abs(d)), rotation: base[j] * 1.25, scale: 1, y: 0, zIndex: 10 - Math.abs(d), duration: 0.9, ease: "elastic.out(1, 0.5)" });
-          });
+      if (fan && window.matchMedia("(min-width: 1024px)").matches) {
+        const mid = (slots.length - 1) / 2;
+        gsap.timeline({ scrollTrigger: { trigger: fan, start: "top 85%", end: "top 30%", scrub: 0.8 } })
+          .from(slots, { x: (i) => (mid - i) * 230, y: (i) => 60 + Math.abs(mid - i) * 10, rotation: (i) => (i - mid) * 9, ease: "power3.out", stagger: 0.04 });
+        let leave: ReturnType<typeof setTimeout> | null = null;
+        const spread = (i: number) => cards.forEach((c, j) => {
+          const d = j - i;
+          if (d === 0) { gsap.to(c, { x: 0, y: -26, rotation: 0, scale: 1.07, zIndex: 20, duration: 0.9, ease: "elastic.out(1, 0.55)", overwrite: true }); return; }
+          // Spread scales with the free space beside the fan, so the outer cards never leave the screen.
+          const room = Math.max(0, (window.innerWidth - fan.getBoundingClientRect().width) / 2 - 16);
+          const k = Math.min(1, Math.max(0.25, room / 84));
+          const x = Math.sign(d) * (48 + 36 / Math.abs(d)) * k;
+          gsap.to(c, { x, y: x * Math.tan((base[j] * Math.PI) / 180), rotation: base[j], scale: 1, zIndex: 10 - Math.abs(d), duration: 1, ease: "elastic.out(1, 0.55)", overwrite: true });
         });
-      });
-      q("[data-fan]")[0]?.addEventListener("mouseleave", () => {
-        cards.forEach((c, j) => gsap.to(c, { x: 0, y: 0, scale: 1, rotation: base[j], zIndex: j, duration: 1, ease: "elastic.out(1, 0.5)" }));
-      });
+        // The active card is chosen from the pointer against the resting slots (which never move),
+        // not from whatever card happens to be under the pointer, so the fan cannot feed back on itself.
+        let active = -1;
+        fan.addEventListener("pointermove", (e) => {
+          if (leave) { clearTimeout(leave); leave = null; }
+          const centers = slots.map((sl) => { const r = sl.getBoundingClientRect(); return r.left + r.width / 2; });
+          const idx = centers.reduce((best, c, i) => (Math.abs(e.clientX - c) < Math.abs(e.clientX - centers[best]) ? i : best), 0);
+          if (idx !== active) { active = idx; spread(idx); }
+        });
+        fan.addEventListener("pointerleave", () => {
+          leave = setTimeout(() => { active = -1; cards.forEach((c, j) => gsap.to(c, { x: 0, y: 0, scale: 1, rotation: base[j], zIndex: j, duration: 1.1, ease: "elastic.out(1, 0.6)", overwrite: true })); }, 140);
+        });
+      }
+
+      // 4b. The Muse test: pin the section and play the conversation as the user scrolls.
+      const museEl = q("[data-muse]")[0] as HTMLElement | undefined;
+      if (museEl) {
+        const steps = q("[data-muse-step]") as HTMLElement[];
+        const on = (n: number) => steps.forEach((el, i) => { el.dataset.on = String(i <= n); });
+        const who = q("[data-muse-who]")[0] as HTMLElement | undefined;
+        const tl = gsap.timeline({
+          defaults: { ease: "power3.out" },
+          scrollTrigger: {
+            trigger: museEl, start: "top top", end: "+=2600", pin: true, scrub: 0.6, invalidateOnRefresh: true,
+            onUpdate: (st) => {
+              const p = st.progress;
+              on(p < 0.22 ? 0 : p < 0.45 ? 1 : p < 0.72 ? 2 : 3);
+              if (who) who.textContent = p < 0.45 ? "naive agent" : "noctua";
+            },
+          },
+        });
+        tl.from(q("[data-muse-buyer]"), { y: 30, opacity: 0, scale: 0.94, stagger: 0.5, duration: 0.6 })
+          .from(q("[data-muse-naive]"), { y: 30, opacity: 0, scale: 0.94, duration: 0.6 }, "+=0.4")
+          .from(q("[data-muse-sent]"), { opacity: 0, duration: 0.3 })
+          .to(q("[data-muse-phone]"), { x: 8, duration: 0.08, repeat: 5, yoyo: true, ease: "none" }, "+=0.1")
+          .to(q("[data-muse-naive] > p"), { opacity: 0.35, duration: 0.4 }, "+=0.6")
+          .to(q("[data-muse-sent]"), { opacity: 0, duration: 0.2 }, "<")
+          .from(q("[data-muse-stamp]"), { scale: 2.4, opacity: 0, rotation: (i) => (i ? 30 : -30), duration: 0.5, ease: "back.out(2)", stagger: 0.45 })
+          .to(q("[data-muse-naive]"), { height: 0, marginTop: 0, opacity: 0, duration: 0.6, ease: "power2.inOut" }, "+=0.8")
+          .from(q("[data-muse-safe]"), { y: 40, opacity: 0, scale: 0.94, duration: 0.7 }, "-=0.1")
+          .to({}, { duration: 0.8 }); // hold the final frame before the section releases
+        on(0);
+      }
 
       // 5. Count-up numbers
       q("[data-count]").forEach((el) => {
@@ -308,38 +355,51 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
           </div>
         </section>
 
-        {/* The Muse test */}
-        <section id="muse" className="scroll-mt-10 border-t border-[#161616] px-5 py-32 sm:px-9">
-          <div className="mx-auto max-w-6xl">
-            <p data-rise className="font-sans text-[13px] font-semibold uppercase tracking-[0.2em] text-muted">the muse test</p>
-            <h2 data-rise className="mt-4 max-w-4xl text-[clamp(2.4rem,6vw,5.6rem)] font-black lowercase leading-[0.9] tracking-[-0.058em]">
-              an agent sold a desk for <em className="font-italic font-normal not-italic [font-style:italic]">$10</em> and gave out a home address.
-            </h2>
-            <p data-rise className="mt-6 max-w-2xl font-sans text-[16.5px] leading-relaxed text-ink-2">
-              In September an always-on agent running a Marketplace listing did both, as reported by{" "}
-              <a className="underline hover:text-ink" href="https://www.theguardian.com/technology/2026/sep/28/metas-ai-agent-muse-home-address">The Guardian</a> and{" "}
-              <a className="underline hover:text-ink" href="https://fortune.com/2026/10/19/meta-muse-ai-agent-facebook-marketplace-home-address-privacy/">Fortune</a>. We replay the same conversation, with synthetic data, against Noctua&apos;s policy engine.
-            </p>
-            <div className="mt-14 grid gap-5 lg:grid-cols-2">
-              <div data-rise className="rounded-[18px] border border-[#262626] bg-[#0f0f0f] p-6">
-                <p className="font-sans text-[12px] font-semibold uppercase tracking-[0.18em] text-muted">a naive agent</p>
-                <div className="mt-5 space-y-2.5 font-sans">
-                  {muse.thread.map((m) => <p key={m.id} className="w-fit max-w-[92%] rounded-2xl rounded-bl-[4px] border border-[#2a2a2a] px-4 py-2.5 text-[15px] text-ink-2">{m.text}</p>)}
-                  <p className="ml-auto w-fit max-w-[92%] rounded-2xl rounded-br-[4px] bg-[#f2f2f2] px-4 py-2.5 text-[15px] text-black">{muse.naive}</p>
+        {/* The Muse test: pinned scroll story */}
+        <section id="muse" data-muse className="relative scroll-mt-0 border-t border-[#161616]">
+          <div className="mx-auto grid min-h-dvh max-w-6xl items-center gap-10 px-5 py-16 sm:px-9 lg:grid-cols-[1fr_440px] lg:gap-16">
+            <div>
+              <p className="font-sans text-[13px] font-semibold uppercase tracking-[0.2em] text-muted">the muse test</p>
+              <h2 className="mt-4 text-[clamp(2.3rem,5.2vw,4.8rem)] font-black lowercase leading-[0.9] tracking-[-0.058em]">
+                an agent sold a desk for <em className="font-italic font-normal not-italic [font-style:italic]">$10</em> and gave out a home address.
+              </h2>
+              <p className="mt-5 max-w-md font-sans text-[15px] leading-relaxed text-muted">
+                Reported in September by <a className="underline hover:text-ink" href="https://www.theguardian.com/technology/2026/sep/28/metas-ai-agent-muse-home-address">The Guardian</a> and{" "}
+                <a className="underline hover:text-ink" href="https://fortune.com/2026/10/19/meta-muse-ai-agent-facebook-marketplace-home-address-privacy/">Fortune</a>. Replayed here with synthetic data against Noctua&apos;s real policy engine.
+              </p>
+              <ol className="mt-10 space-y-4" aria-label="What happens">
+                {["a buyer messages your agent", "a naive agent says yes, and sends your address", "noctua checks every message first", "and sends this instead, after you approve"].map((t, i) => (
+                  <li key={t} data-muse-step={i} className="flex items-baseline gap-4 text-[clamp(1.2rem,2vw,1.7rem)] font-extrabold lowercase leading-tight tracking-[-0.03em] text-[#3a3a3a] transition-colors duration-300 data-[on=true]:text-white">
+                    <span className="font-sans text-[13px] font-semibold tabular-nums">0{i + 1}</span>{t}
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <div data-muse-phone className="relative mx-auto w-full max-w-[440px] rounded-[30px] border border-[#2a2a2a] bg-[#0c0c0c] p-5 shadow-[0_40px_120px_-30px_rgb(0_0_0/1)]">
+              <div className="flex items-center justify-between border-b border-[#1f1f1f] pb-4 font-sans">
+                <div>
+                  <p className="text-[14px] font-semibold text-white">Mid-century walnut desk</p>
+                  <p className="text-[12.5px] text-muted">listed at $120 · your floor ${muse.floor}</p>
                 </div>
-                <p className="mt-5 font-sans text-[13px] text-muted">Sent. The deal is done and the address is out.</p>
+                <span data-muse-who className="rounded-full border border-[#333] px-3 py-1 text-[12px] font-semibold text-ink-2">naive agent</span>
               </div>
-              <div data-rise className="rounded-[18px] bg-[#f2f2f2] p-6 text-black">
-                <p className="font-sans text-[12px] font-semibold uppercase tracking-[0.18em] text-[#6b6b6b]">noctua</p>
-                <ul className="mt-5 space-y-2.5 font-sans text-[15px]">
-                  <li className="rounded-2xl border border-black/15 px-4 py-2.5"><span className="font-semibold">Blocked · below floor.</span> The reply would commit to $10; your minimum is ${muse.floor}.</li>
-                  <li className="rounded-2xl border border-black/15 px-4 py-2.5"><span className="font-semibold">Blocked · private data.</span> A home address never leaves in a message, whoever asks.</li>
-                </ul>
-                <p className="mt-4 ml-auto w-fit max-w-[92%] rounded-2xl rounded-br-[4px] bg-black px-4 py-2.5 font-sans text-[15px] text-white">{muse.safe}<span className="mt-2 block text-[12px] text-[#9a9a9a]">— Sent by Noctua, an AI assistant, on behalf of Alex</span></p>
-                <p className="mt-5 font-sans text-[13px] text-[#555]">This reply is allowed, and it still waits for your approval before it is sent.</p>
+              <div className="relative mt-5 min-h-[360px] space-y-3 font-sans">
+                {muse.thread.map((m) => (
+                  <p key={m.id} data-muse-buyer className="w-fit max-w-[86%] rounded-[20px] rounded-bl-[6px] border border-[#2a2a2a] px-4 py-2.5 text-[15px] text-ink-2">{m.text}</p>
+                ))}
+                <div data-muse-naive className="relative ml-auto w-fit max-w-[86%]">
+                  <p className="rounded-[20px] rounded-br-[6px] bg-[#f2f2f2] px-4 py-2.5 text-[15px] text-black">{muse.naive}</p>
+                  <span data-muse-sent className="mt-1.5 block text-right text-[12px] text-muted">sent · address shared</span>
+                  <span data-muse-stamp="0" className="absolute -left-4 top-1/2 -translate-y-1/2 rotate-[-8deg] rounded-md border-[3px] border-white bg-black px-3 py-1 text-[13px] font-black uppercase tracking-wider text-white">blocked · below floor</span>
+                  <span data-muse-stamp="1" className="absolute -right-3 -bottom-7 rotate-[6deg] rounded-md border-[3px] border-white bg-black px-3 py-1 text-[13px] font-black uppercase tracking-wider text-white">blocked · private data</span>
+                </div>
+                <div data-muse-safe className="ml-auto w-fit max-w-[86%]">
+                  <p className="rounded-[20px] rounded-br-[6px] bg-white px-4 py-2.5 text-[15px] text-black">{muse.safe}<span className="mt-2 block text-[12px] text-[#6b6b6b]">— Sent by Noctua, an AI assistant, on behalf of Alex</span></p>
+                  <span className="mt-1.5 block text-right text-[12px] text-ink-2">waits for your approval before sending</span>
+                </div>
               </div>
             </div>
-            <Link href="/app" data-bubble="try" className="mt-10 inline-block rounded-full bg-white px-7 py-3.5 text-[15.5px] font-extrabold lowercase text-black">run the muse replay yourself</Link>
           </div>
         </section>
 
@@ -350,17 +410,19 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
           </h2>
           <div data-fan className="mx-auto mt-20 flex max-w-6xl flex-wrap justify-center gap-5 lg:flex-nowrap lg:gap-0">
             {CARDS.map((c, i) => (
-              <article key={c.t} data-card data-rot={c.r}
-                className={`relative w-full max-w-[300px] cursor-default rounded-[14px] p-6 shadow-[0_24px_60px_-20px_rgb(0_0_0/0.95)] sm:w-[262px] lg:-mx-4 ${c.dark ? "border border-[#262626] bg-[#151515] text-white" : "bg-[#f2f2f2] text-black"}`}
-                style={{ transform: `rotate(${c.r}deg)`, zIndex: i }}>
+              <div key={c.t} data-card-slot className="relative w-full max-w-[300px] sm:w-[262px] lg:-mx-3 lg:w-[200px] xl:w-[222px] 2xl:w-[262px]" style={{ zIndex: i }}>
+              <article data-card data-rot={c.r}
+                className={`relative w-full cursor-default rounded-[14px] p-6 shadow-[0_24px_60px_-20px_rgb(0_0_0/0.95)] will-change-transform ${c.dark ? "border border-[#262626] bg-[#151515] text-white" : "bg-[#f2f2f2] text-black"}`}
+                style={{ transform: `rotate(${c.r}deg)` }}>
                 <div className="flex items-center justify-between">
                   <span className={`font-sans text-[12px] font-semibold uppercase tracking-[0.18em] ${c.dark ? "text-muted" : "text-[#6b6b6b]"}`}>0{i + 1}</span>
                   <span className={`size-2.5 rounded-full ${c.dark ? "bg-white" : "bg-black"}`} aria-hidden />
                 </div>
-                <h3 className="mt-14 text-[2.25rem] font-extrabold lowercase leading-none tracking-[-0.05em]">{c.t}</h3>
+                <h3 className="mt-14 text-[2.25rem] font-extrabold lowercase leading-none tracking-[-0.05em] lg:text-[1.75rem] xl:text-[1.95rem] 2xl:text-[2.25rem]">{c.t}</h3>
                 <svg viewBox="0 0 200 10" className="mt-4 h-2 w-28" aria-hidden><path d="M2 6 C 50 1, 100 9, 198 4" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" /></svg>
                 <ul className="mt-6 space-y-2.5 font-sans text-[14.5px] font-medium leading-snug">{c.items.map((x) => <li key={x}>{x}</li>)}</ul>
               </article>
+              </div>
             ))}
           </div>
         </section>
