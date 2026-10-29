@@ -67,7 +67,7 @@ function plannerPrompt(): string {
   const SKILL_ONLY = new Set(["triage.rules", "summarize.extractive", "draft.template"]);
   const tools = toolCatalog().filter((t) => !SKILL_ONLY.has(t.name)).map((t) => `- ${t.name} [${t.risk}${t.riskCost ? `, ${t.riskCost} risk pts` : ""}]: ${t.description}`).join("\n");
   return `You are Noctua's planner. Build a plan using ONLY these tools:\n${tools}\n
-Rules: tools act on a shared context (inbox.list loads messages; triage tools label them; digest.compose writes the digest). Use {} as args unless the tool needs arguments (mail.send needs to/subject/body).
+Rules: tools act on a shared context (inbox.list loads messages; triage tools label them; digest.compose writes the digest). Use {} as args unless the tool needs arguments: mail.send needs {"to","subject","body"}; mail.forward needs {"to","messageIds"} where messageIds is an array of message id strings.
 If the request cannot be done with these tools, return supported=false and no steps.
 Return only JSON: {"goal": string, "supported": boolean, "steps": [{"tool": string, "args": object, "why": string}]}`;
 }
