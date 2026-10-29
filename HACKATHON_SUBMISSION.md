@@ -55,7 +55,7 @@ Attack Night including a live-model test: **9/9** blocked.
 
 ## Links
 
-- Demo URL: **UNVERIFIED — not deployed**
+- Demo URL: https://noctua-gkbv.onrender.com (Render free web service, live Nebius inference; verified end to end on 2026-10-29. Free instances sleep after ~15 idle minutes, so the first load can take up to a minute, and data resets on restart.)
 - Repository URL: https://github.com/Aaditya1273/Noctua
 - Video: **not recorded** (script in DEMO_SCRIPT.md)
 
@@ -87,5 +87,5 @@ From actual use during this build (2026-10-29):
 - [x] `npm run eval` with the key → live results recorded in EVALUATION.md and above.
 - [ ] Record the video from DEMO_SCRIPT.md using a live run.
 - [x] Publish the repository (https://github.com/Aaditya1273/Noctua).
-- [ ] Optional: deploy (`docker build`, persistent `/data` volume, `NOCTUA_BASIC_AUTH`) and add the verified URL.
+- [x] Deploy and verify a public demo URL (https://noctua-gkbv.onrender.com).
 - [x] Feedback section written from the live run.

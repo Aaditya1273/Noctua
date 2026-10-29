@@ -1,5 +1,7 @@
 # Noctua
 
+**Live demo:** https://noctua-gkbv.onrender.com (free instance: the first load after idle can take up to a minute)
+
 **Your personal AI gets more efficient with every repeated task — without surrendering control.**
 
 Noctua is a personal agent that learns which of your recurring tasks can become **verified, deterministic workflows**. The first time you ask for something, an NVIDIA Nemotron model (served by Nebius Token Factory) plans and executes it with allowlisted tools. When a task repeats, Noctua turns the run into a candidate *skill*, tests it against fixed fixtures and attacks, and promotes it only if every mandatory check passes. After that, the same request runs **without calling the model**. Every run comes with a receipt. A skill that breaks at run time is demoted automatically, and the task is re-run with full reasoning.
