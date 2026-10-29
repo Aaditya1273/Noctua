@@ -195,3 +195,21 @@ test("JSON extraction tolerates fences and reasoning blocks", () => {
   assert.equal(extractJson("no json"), undefined);
   assert.equal(stripReasoning("<think>x</think> ok"), "ok");
 });
+
+test("planner naming a recipient ('Priya') is resolved to the inbox sender and then needs approval", async () => {
+  const mock = await mockProvider((body, n) => {
+    if (body.messages[0].content.includes("Noctua's planner"))
+      return { content: JSON.stringify({ goal: "Reply", supported: true, steps: [{ tool: "inbox.list", args: {} }, { tool: "triage.llm", args: {} }, { tool: "digest.compose", args: {} }, { tool: "mail.send", args: { to: "Priya", subject: "Re: 1:1", body: "Thursday works." } }] }) };
+    return goodModel(body, n);
+  });
+  try {
+    freshLive(mock);
+    const t = getTask((await runTask({ prompt: "Review today's inbox and send a reply to Priya confirming Thursday works.", day: 1, route: "auto" })).taskId)!;
+    const a = t.result!.actions[0];
+    assert.equal(a.decision, "require_approval");
+    assert.equal((a.args as { to: string }).to, "priya@northwind.example");
+    assert.ok(t.trace.some((e) => e.name === "recipient"));
+  } finally {
+    await mock.close();
+  }
+});

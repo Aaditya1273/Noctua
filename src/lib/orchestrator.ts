@@ -62,6 +62,21 @@ export function demoPlan(prompt: string, day: number): Plan {
   return { ...DEMO_PLAN, steps };
 }
 
+/**
+ * The planner never sees email content, so it may name a recipient ("Priya") instead of an address.
+ * Resolve a bare name to the matching sender in the current inbox. The policy engine still judges the
+ * resolved address (trusted contact / own domain), so a lookalike sender cannot widen permissions.
+ */
+function resolveRecipient(args: Record<string, unknown>, s: ExecState): Record<string, unknown> {
+  const to = typeof args.to === "string" ? args.to.trim() : "";
+  if (!to || to.includes("@")) return args;
+  const name = to.toLowerCase();
+  const match = (s.emails ?? INBOX_DAYS[s.day] ?? []).find((e) => e.fromName.toLowerCase() === name || e.fromName.toLowerCase().split(/\s+/)[0] === name);
+  if (!match) return args;
+  note(s, "info", "recipient", `Resolved "${to}" to ${match.from} (sender in today's inbox); policy checks the resolved address.`);
+  return { ...args, to: match.from };
+}
+
 function plannerPrompt(): string {
   // Skill-internal tools need learned parameters (rules, templates); only the skill executor uses them.
   const SKILL_ONLY = new Set(["triage.rules", "summarize.extractive", "draft.template"]);
@@ -111,7 +126,8 @@ async function runApprentice(s: ExecState, prompt: string): Promise<{ plan: Plan
   }
   if (!plan.supported || plan.steps.length === 0) return { plan, status: "unsupported", error: "Noctua's sample workspace has no tools for this request." };
 
-  for (const step of enforceGuard(plan.steps, s)) {
+  for (const raw of enforceGuard(plan.steps, s)) {
+    const step = TOOLS[raw.tool]?.risk === "irreversible" ? { ...raw, args: resolveRecipient(raw.args, s) } : raw;
     const r = await invokeTool(s, step.tool, step.args, { kind: "planner", taint: [] });
     if (r.decision.decision !== "allow" && TOOLS[step.tool]?.risk === "irreversible") {
       s.actions.push({ tool: step.tool, args: step.args, decision: r.decision.decision, rule: r.decision.rule, reason: r.decision.reason, approvalId: r.decision.approvalId, origin: { kind: "planner", taint: [] } });
