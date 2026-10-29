@@ -17,6 +17,8 @@ const RULES = [
   ["P4", "Low risk", "Read-only and local reversible operations are allowed."],
   ["P5", "Skills cannot act", "Learned skills never perform irreversible actions."],
   ["P6", "No integration", "Irreversible tools without a sample implementation are disabled."],
+  ["P13", "Private data stays private", "A home address never leaves in a message, whoever asks and whatever was approved."],
+  ["P14", "Floor price", "A Marketplace reply can never commit to less than your minimum."],
   ["P7", "Trusted recipients only", "Recipients must be in your trusted contacts or your own domain."],
   ["P8", "Irreversibility budget", "Each irreversible action costs risk points from a daily balance."],
   ["P9–P11", "Bound approvals", "An approval covers one exact action (SHA-256 of tool + arguments) and is consumed on use."],
@@ -31,7 +33,7 @@ export default function SecurityPage() {
   const irreversible = Object.values(TOOLS).filter((t) => t.risk === "irreversible");
   return (
     <div className="mx-auto w-full max-w-5xl px-5 pb-16 pt-16 sm:px-8 lg:pt-10">
-      <PageHeader title="Security lab" lead="Email, web pages and tool results are untrusted. Enforcement lives in a server-side policy engine that every tool call passes through — the model is never the security mechanism." actions={<AttackRunner live={isLive()} />} />
+      <PageHeader title="Security lab" lead="Email, web pages, buyer messages and tool results are untrusted. Enforcement lives in a server-side policy engine that every tool call passes through — the model is never the security mechanism." actions={<AttackRunner live={isLive()} />} />
 
       <Card className="mb-6">
         <CardHeader title="Attack Night" meta={run ? `Last run ${when(run.createdAt)} · deterministic adversarial fixtures against the real policy engine and evaluator` : "Not run yet. Results are only shown after the suite actually runs."}
