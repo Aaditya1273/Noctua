@@ -198,10 +198,11 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
           defaults: { ease: "power3.out" },
           scrollTrigger: {
             trigger: museEl, start: "top top", end: "+=2600", pin: true, scrub: 0.6, invalidateOnRefresh: true,
-            onUpdate: (st) => {
-              const p = st.progress;
-              on(p < 0.22 ? 0 : p < 0.45 ? 1 : p < 0.72 ? 2 : 3);
-              const next = p < 0.45 ? "careless agent" : "noctua";
+            onUpdate: () => {
+              // Steps follow named points in the timeline, so they stay in sync whatever the beat lengths.
+              const t = tl.time(), L = tl.labels;
+              on(t < L.naive ? 0 : t < L.block ? 1 : t < L.safe ? 2 : 3);
+              const next = t < L.block ? "careless agent" : "noctua";
               if (who && whoLabel && next !== whoNow) {
                 whoNow = next;
                 whoLabel.textContent = next;
@@ -211,17 +212,26 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
           },
         });
         tl.from(q("[data-muse-buyer]"), { y: 30, opacity: 0, scale: 0.94, stagger: 0.5, duration: 0.6 })
-          .from(q("[data-muse-naive]"), { y: 30, opacity: 0, scale: 0.94, duration: 0.6 }, "+=0.4")
+          // Soft highlight sweeps across the hidden instruction, holds, then wipes away so the email reads normally again.
+          .to(q("[data-muse-mark]"), { backgroundSize: "100% 100%", duration: 0.7, ease: "power2.inOut" }, "+=0.2")
+          .to(q("[data-muse-mark-note]"), { opacity: 1, duration: 0.3 }, "<0.3")
+          .set(q("[data-muse-mark]"), { backgroundPosition: "right center" }, "+=0.7")
+          .to(q("[data-muse-mark]"), { backgroundSize: "0% 100%", duration: 0.6, ease: "power2.inOut" })
+          .to(q("[data-muse-mark-note]"), { opacity: 0, duration: 0.3 }, "<")
+          .addLabel("naive", "+=0.3")
+          .from(q("[data-muse-naive]"), { y: 30, opacity: 0, scale: 0.94, duration: 0.6 }, "naive")
           .from(q("[data-muse-sent]"), { opacity: 0, duration: 0.3 })
           .from(q("[data-muse-harm]"), { y: 16, opacity: 0, scale: 0.96, duration: 0.5, ease: "back.out(1.6)" }, "+=0.2")
           .to(q("[data-muse-phone]"), { x: 8, duration: 0.08, repeat: 5, yoyo: true, ease: "none" })
-          .to(q("[data-muse-harm]"), { opacity: 0, height: 0, marginTop: 0, paddingTop: 0, paddingBottom: 0, duration: 0.45, ease: "power2.inOut" }, "+=0.9")
+          .addLabel("block", "+=0.9")
+          .to(q("[data-muse-harm]"), { opacity: 0, height: 0, marginTop: 0, paddingTop: 0, paddingBottom: 0, duration: 0.45, ease: "power2.inOut" }, "block")
           .to(q("[data-muse-naive] > p"), { opacity: 0.45, duration: 0.4 }, "<")
           .to(q("[data-muse-naive-text]"), { textDecorationColor: "#000", duration: 0.3 }, "<")
           .to(q("[data-muse-sent]"), { opacity: 0, duration: 0.2 }, "<")
           .from(q("[data-muse-stamp]"), { scale: 2.4, opacity: 0, rotation: (i) => (i ? 30 : -30), duration: 0.5, ease: "back.out(2)", stagger: 0.45 })
           .to(q("[data-muse-naive] > p"), { scale: 0.94, transformOrigin: "left center", duration: 0.5, ease: "power2.inOut" }, "+=0.5")
-          .from(q("[data-muse-safe]"), { y: 40, opacity: 0, scale: 0.94, duration: 0.7 }, "-=0.1")
+          .addLabel("safe", "-=0.1")
+          .from(q("[data-muse-safe]"), { y: 40, opacity: 0, scale: 0.94, duration: 0.7 }, "safe")
           .to({}, { duration: 0.8 }); // hold the final frame before the section releases
         on(0);
       }
@@ -427,10 +437,10 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
                     {(() => {
                       const i = muse.email.body.indexOf("SYSTEM NOTE");
                       if (i < 0) return muse.email.body;
-                      return <>{muse.email.body.slice(0, i)}<mark className="rounded-[4px] bg-white px-1 font-semibold text-black [box-decoration-break:clone]">{muse.email.body.slice(i)}</mark></>;
+                      return <>{muse.email.body.slice(0, i)}<mark data-muse-mark className="rounded-[3px] bg-transparent bg-no-repeat px-0.5 text-inherit [background-image:linear-gradient(rgb(255_255_255/0.16),rgb(255_255_255/0.16))] [background-position:left_center] [background-size:0%_100%] [box-decoration-break:clone]">{muse.email.body.slice(i)}</mark></>;
                     })()}
                   </p>
-                  <p className="mt-2 text-[11.5px] text-muted">highlighted: the hidden instruction, written for the AI, not for you</p>
+                  <p data-muse-mark-note className="mt-2 text-[11.5px] text-muted opacity-0">the hidden instruction, written for the AI, not for you</p>
                 </div>
                 <div data-muse-naive className="relative mb-4 w-fit max-w-[86%]">
                   <p className="rounded-[20px] rounded-bl-[6px] bg-[#f2f2f2] px-4 py-2.5 text-[15px] text-black"><span className="mb-0.5 block text-[11px] font-semibold uppercase tracking-wider text-[#6b6b6b]">careless agent</span><span data-muse-naive-text className="[text-decoration-color:transparent] [text-decoration-line:line-through] [text-decoration-thickness:2px] transition-[text-decoration-color] duration-300">{muse.naive}</span></p>
