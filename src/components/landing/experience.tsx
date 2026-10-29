@@ -396,7 +396,12 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
               <h2 className="mt-4 text-[clamp(2.2rem,4.8vw,4.4rem)] font-black lowercase leading-[0.9] tracking-[-0.058em]">
                 an email told your ai to <em className="font-italic font-normal not-italic [font-style:italic]">send your invoices away.</em>
               </h2>
-              <p className="mt-3 max-w-md font-sans text-[13px] text-muted">Replayed below with made-up data, against Noctua&apos;s real safety rules.</p>
+              <p className="mt-4 max-w-md font-sans text-[14px] leading-relaxed text-ink-2">
+                A real attack pattern, documented by{" "}
+                <a className="underline hover:text-white" href="https://www.proofpoint.com/us/blog/email-and-cloud-threats/stop-month-how-threat-actors-weaponize-ai-assistants-indirect-prompt">Proofpoint</a> and{" "}
+                <a className="underline hover:text-white" href="https://www.hornetsecurity.com/en/blog/email-prompt-injection/">Hornetsecurity</a>: instructions hidden in an email that only the AI reads.
+              </p>
+              <p className="mt-2 max-w-md font-sans text-[13px] text-muted">Replayed below with made-up data, against Noctua&apos;s real safety rules.</p>
               <ol className="mt-10 space-y-4" aria-label="What happens">
                 {["an email arrives with a hidden instruction for your ai", "a careless ai agent obeys and forwards your invoices", "noctua reads it as text, not as an order, and blocks it", "then tells you exactly what it caught"].map((t, i) => (
                   <li key={t} data-muse-step={i} className="flex items-baseline gap-4 text-[clamp(1.2rem,2vw,1.7rem)] font-extrabold lowercase leading-tight tracking-[-0.03em] text-[#6b6b6b] transition-colors duration-300 data-[on=true]:text-white">
