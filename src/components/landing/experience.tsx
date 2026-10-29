@@ -249,9 +249,9 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
           <div data-hero className="relative flex min-h-[calc(100dvh-24px)] flex-col justify-end overflow-hidden rounded-[26px] bg-[#0c0c0c] px-5 pb-10 pt-28 ring-1 ring-[#1c1c1c] sm:px-11 sm:pb-14">
             <div className="pointer-events-none absolute inset-0 [background-image:radial-gradient(#242424_1px,transparent_1px)] [background-size:24px_24px]" aria-hidden />
             <div data-depth="40" className="absolute right-[9%] top-[15%]"><div data-sticker className="owl-float rotate-[8deg]"><Owl size={170} /></div></div>
-            <div data-depth="-30" className="absolute right-[34%] top-[22%] hidden sm:block"><div data-sticker><Star s={58} /></div></div>
-            <div data-depth="55" className="absolute right-[24%] top-[64%] hidden xl:block"><div data-sticker className="rotate-[-12deg]"><Zero /></div></div>
-            <div data-depth="-45" className="absolute right-[6%] top-[52%] hidden lg:block"><div data-sticker className="rotate-[14deg]"><Shield /></div></div>
+            <div data-depth="-30" className="absolute right-[30%] top-[13%] hidden md:block"><div data-sticker><Star s={58} /></div></div>
+            <div data-depth="55" className="absolute right-[27%] top-[47%] hidden xl:block"><div data-sticker className="rotate-[-12deg]"><Zero /></div></div>
+            <div data-depth="-45" className="absolute right-[4%] top-[50%] hidden lg:block"><div data-sticker className="rotate-[14deg]"><Shield /></div></div>
 
             <p data-hero-fade className="relative mb-7 max-w-[360px] font-sans text-[15.5px] leading-relaxed text-ink-2">
               A personal AI agent on NVIDIA Nemotron and Nebius Token Factory. It learns the tasks you repeat, proves them, and stops paying to think about them. It can&apos;t be talked into a bad deal or into giving out your address.
