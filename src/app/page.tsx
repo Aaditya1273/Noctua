@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import Link from "next/link";
+import { connection } from "next/server";
 import { Owl } from "@/components/owl";
 
 type Run = { tier: string; modelCalls: number; costUsd: number | null; latencyMs: number | null };
@@ -27,7 +28,8 @@ const CARDS = [
 
 const WORDS = ["reason once", "verify", "reuse", "zero inference", "receipts", "attack night", "your rules"];
 
-export default function Landing() {
+export default async function Landing() {
+  await connection(); // render per request so a cached old copy is never served
   const r = results();
   const live = r?.mode === "live";
   const date = r ? new Date(r.generatedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
