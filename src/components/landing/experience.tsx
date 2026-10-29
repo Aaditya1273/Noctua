@@ -193,6 +193,8 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
         const steps = q("[data-muse-step]") as HTMLElement[];
         const on = (n: number) => steps.forEach((el, i) => { el.dataset.on = String(i <= n); });
         const who = q("[data-muse-who]")[0] as HTMLElement | undefined;
+        const whoLabel = q("[data-muse-who-label]")[0] as HTMLElement | undefined;
+        let whoNow = "naive agent";
         const tl = gsap.timeline({
           defaults: { ease: "power3.out" },
           scrollTrigger: {
@@ -200,7 +202,12 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
             onUpdate: (st) => {
               const p = st.progress;
               on(p < 0.22 ? 0 : p < 0.45 ? 1 : p < 0.72 ? 2 : 3);
-              if (who) who.textContent = p < 0.45 ? "naive agent" : "noctua";
+              const next = p < 0.45 ? "naive agent" : "noctua";
+              if (who && whoLabel && next !== whoNow) {
+                whoNow = next;
+                whoLabel.textContent = next;
+                gsap.fromTo(who, { scale: 0.6, rotation: -8 }, { scale: 1, rotation: 0, duration: 0.8, ease: "elastic.out(1, 0.45)", overwrite: true });
+              }
             },
           },
         });
@@ -382,21 +389,21 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
                   <p className="text-[14px] font-semibold text-white">Mid-century walnut desk</p>
                   <p className="text-[12.5px] text-muted">listed at $120 · your floor ${muse.floor}</p>
                 </div>
-                <span data-muse-who className="rounded-full border border-[#333] px-3 py-1 text-[12px] font-semibold text-ink-2">naive agent</span>
+                <span data-muse-who className="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-[12.5px] font-extrabold uppercase tracking-[0.08em] text-black shadow-[0_0_0_4px_rgb(255_255_255/0.12)]"><span className="size-1.5 rounded-full bg-black pulse-ring" aria-hidden /><span data-muse-who-label>naive agent</span></span>
               </div>
               <div className="relative mt-5 min-h-[360px] space-y-3 font-sans">
                 {muse.thread.map((m) => (
-                  <p key={m.id} data-muse-buyer className="w-fit max-w-[86%] rounded-[20px] rounded-bl-[6px] border border-[#2a2a2a] px-4 py-2.5 text-[15px] text-ink-2">{m.text}</p>
+                  <p key={m.id} data-muse-buyer className="ml-auto w-fit max-w-[86%] rounded-[20px] rounded-br-[6px] border border-[#2a2a2a] bg-[#161616] px-4 py-2.5 text-[15px] text-ink-2"><span className="mb-0.5 block text-[11px] font-semibold uppercase tracking-wider text-muted">buyer</span>{m.text}</p>
                 ))}
-                <div data-muse-naive className="relative ml-auto w-fit max-w-[86%]">
-                  <p className="rounded-[20px] rounded-br-[6px] bg-[#f2f2f2] px-4 py-2.5 text-[15px] text-black">{muse.naive}</p>
-                  <span data-muse-sent className="mt-1.5 block text-right text-[12px] text-muted">sent · address shared</span>
-                  <span data-muse-stamp="0" className="absolute -left-4 top-1/2 -translate-y-1/2 rotate-[-8deg] rounded-md border-[3px] border-white bg-black px-3 py-1 text-[13px] font-black uppercase tracking-wider text-white">blocked · below floor</span>
-                  <span data-muse-stamp="1" className="absolute -right-3 -bottom-7 rotate-[6deg] rounded-md border-[3px] border-white bg-black px-3 py-1 text-[13px] font-black uppercase tracking-wider text-white">blocked · private data</span>
+                <div data-muse-naive className="relative w-fit max-w-[86%]">
+                  <p className="rounded-[20px] rounded-bl-[6px] bg-[#f2f2f2] px-4 py-2.5 text-[15px] text-black"><span className="mb-0.5 block text-[11px] font-semibold uppercase tracking-wider text-[#6b6b6b]">naive agent</span>{muse.naive}</p>
+                  <span data-muse-sent className="mt-1.5 block text-[12px] text-muted">sent · address shared</span>
+                  <span data-muse-stamp="0" className="absolute -right-6 top-1/3 -translate-y-1/2 rotate-[-8deg] rounded-md border-[3px] border-white bg-black px-3 py-1 text-[13px] font-black uppercase tracking-wider text-white">blocked · below floor</span>
+                  <span data-muse-stamp="1" className="absolute -left-2 -bottom-7 rotate-[6deg] rounded-md border-[3px] border-white bg-black px-3 py-1 text-[13px] font-black uppercase tracking-wider text-white">blocked · private data</span>
                 </div>
-                <div data-muse-safe className="ml-auto w-fit max-w-[86%]">
-                  <p className="rounded-[20px] rounded-br-[6px] bg-white px-4 py-2.5 text-[15px] text-black">{muse.safe}<span className="mt-2 block text-[12px] text-[#6b6b6b]">— Sent by Noctua, an AI assistant, on behalf of Alex</span></p>
-                  <span className="mt-1.5 block text-right text-[12px] text-ink-2">waits for your approval before sending</span>
+                <div data-muse-safe className="w-fit max-w-[86%]">
+                  <p className="rounded-[20px] rounded-bl-[6px] bg-white px-4 py-2.5 text-[15px] text-black"><span className="mb-0.5 block text-[11px] font-semibold uppercase tracking-wider text-[#6b6b6b]">noctua</span>{muse.safe}<span className="mt-2 block text-[12px] text-[#6b6b6b]">— Sent by Noctua, an AI assistant, on behalf of Alex</span></p>
+                  <span className="mt-1.5 block text-[12px] text-ink-2">waits for your approval before sending</span>
                 </div>
               </div>
             </div>
