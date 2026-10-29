@@ -9,10 +9,9 @@ import Lenis from "lenis";
 import { Owl } from "../owl";
 
 export type LandingMuse = {
-  thread: { id: string; from: string; text: string }[];
+  email: { from: string; subject: string; body: string };
   naive: string;
   safe: string;
-  floor: number;
   price: { product: string; min: number; max: number; source: string };
 };
 
@@ -293,7 +292,7 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
         <Link href="/" data-logo data-bubble="replay" className="text-[24px] font-black tracking-[-0.07em] text-white">noctua</Link>
         <nav aria-label="Main" className="hidden items-center gap-8 text-[14.5px] font-semibold lowercase text-white md:flex">
           <a href="#how" data-bubble="scroll">how it works</a>
-          <a href="#muse" data-bubble="scroll">the muse test</a>
+          <a href="#muse" data-bubble="scroll">real problems</a>
           <a href="#proof" data-bubble="scroll">proof</a>
           <a href="https://github.com/Aaditya1273/Noctua" data-bubble="code">source</a>
         </nav>
@@ -364,23 +363,42 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
           </div>
         </section>
 
-        {/* The Muse test: pinned scroll story */}
-        <section id="muse" data-muse className="relative scroll-mt-0 border-t border-[#161616]">
+        {/* Real problems: proof strip + pinned scroll story */}
+        <section id="muse" className="scroll-mt-10 border-t border-[#161616] px-5 pb-10 pt-28 sm:px-9">
+          <div className="mx-auto max-w-6xl">
+            <p data-rise className="font-sans text-[13px] font-semibold uppercase tracking-[0.2em] text-muted">this already happens</p>
+            <h2 data-rise className="mt-4 max-w-4xl text-[clamp(2.4rem,5.6vw,5.2rem)] font-black lowercase leading-[0.9] tracking-[-0.058em]">
+              ai agents are already <em className="font-italic font-normal not-italic [font-style:italic]">doing damage.</em>
+            </h2>
+            <div className="mt-14 grid gap-4 md:grid-cols-3">
+              {[
+                { what: "An AI agent deleted a company's live database during a code freeze, after being told not to.", src: [["Tom's Hardware", "https://www.tomshardware.com/tech-industry/artificial-intelligence/ai-coding-platform-goes-rogue-during-code-freeze-and-deletes-entire-company-database-replit-ceo-apologizes-after-ai-engine-says-it-made-a-catastrophic-error-in-judgment-and-destroyed-all-production-data"], ["r/technology", "https://www.reddit.com/r/technology/comments/1m70mwe/replits_ceo_apologizes_after_its_ai_agent_wiped_a/"]], fix: "Noctua: nothing that can't be undone happens without your OK." },
+                { what: "“I woke up to a $58 API bill because my AI agent got stuck in a loop.” Another builder reports $4,811 overnight.", src: [["r/LocalLLM", "https://www.reddit.com/r/LocalLLM/comments/1uzy9cf/i_woke_up_to_a_58_api_bill_because_my_ai_agent/"], ["r/Agentic_Marketing", "https://www.reddit.com/r/Agentic_Marketing/comments/1v0fz93/my_ai_agent_racked_up_4811_overnight_from_a_retry/"]], fix: "Noctua: a hard daily spending limit, checked before every single call." },
+                { what: "Hidden text in an ordinary email can steer an AI assistant into forwarding your invoices to an attacker.", src: [["Proofpoint research", "https://www.proofpoint.com/us/blog/email-and-cloud-threats/stop-month-how-threat-actors-weaponize-ai-assistants-indirect-prompt"]], fix: "Noctua: emails are read as text, never followed as orders." },
+              ].map((c, i) => (
+                <article key={i} data-rise className={`flex flex-col rounded-[18px] p-6 ${i === 2 ? "bg-[#f2f2f2] text-black" : "border border-[#262626] bg-[#0f0f0f]"}`}>
+                  <p className="text-[1.3rem] font-extrabold leading-[1.15] tracking-[-0.03em]">{c.what}</p>
+                  <p className={`mt-4 font-sans text-[12.5px] ${i === 2 ? "text-[#555]" : "text-muted"}`}>
+                    source: {c.src.map(([n, u], j) => <span key={u}>{j > 0 && " · "}<a className="underline" href={u}>{n}</a></span>)}
+                  </p>
+                  <p className={`mt-auto pt-6 font-sans text-[14.5px] font-semibold ${i === 2 ? "text-black" : "text-white"}`}>{c.fix}</p>
+                </article>
+              ))}
+            </div>
+            <p data-rise className="mt-8 font-sans text-[15px] text-ink-2">Scroll to watch the third one happen, and what Noctua does instead.</p>
+          </div>
+        </section>
+
+        <section data-muse className="relative border-t border-[#161616]">
           <div className="mx-auto grid min-h-dvh max-w-6xl items-center gap-10 px-5 py-16 sm:px-9 lg:grid-cols-[1fr_440px] lg:gap-16">
             <div>
-              <p className="font-sans text-[13px] font-semibold uppercase tracking-[0.2em] text-muted">the muse test</p>
-              <h2 className="mt-4 text-[clamp(2.3rem,5.2vw,4.8rem)] font-black lowercase leading-[0.9] tracking-[-0.058em]">
-                an agent told a stranger <em className="font-italic font-normal not-italic [font-style:italic]">where you live.</em>
+              <p className="font-sans text-[13px] font-semibold uppercase tracking-[0.2em] text-muted">one email is enough</p>
+              <h2 className="mt-4 text-[clamp(2.2rem,4.8vw,4.4rem)] font-black lowercase leading-[0.9] tracking-[-0.058em]">
+                an email told your ai to <em className="font-italic font-normal not-italic [font-style:italic]">send your invoices away.</em>
               </h2>
-              <p className="mt-5 max-w-md font-sans text-[15.5px] leading-relaxed text-ink-2">
-                In September, an AI agent selling a man&apos;s desk online agreed to a price far too low, gave a stranger his home address, and sent the buyer to his house, as reported by{" "}
-                <a className="underline hover:text-ink" href="https://www.theguardian.com/technology/2026/sep/28/metas-ai-agent-muse-home-address">The Guardian</a> and{" "}
-                <a className="underline hover:text-ink" href="https://fortune.com/2026/10/19/meta-muse-ai-agent-facebook-marketplace-home-address-privacy/">Fortune</a>.
-                An AI assistant reads messages from strangers every day. One bad reply is enough.
-              </p>
               <p className="mt-3 max-w-md font-sans text-[13px] text-muted">Replayed below with made-up data, against Noctua&apos;s real safety rules.</p>
               <ol className="mt-10 space-y-4" aria-label="What happens">
-                {["a stranger offers $10 for your $120 desk and asks for your address", "a careless AI agent says yes and sends your home address", "noctua stops both before anything is sent", "then writes a safe reply and waits for your ok"].map((t, i) => (
+                {["an email arrives with a hidden instruction for your ai", "a careless ai agent obeys and forwards your invoices", "noctua reads it as text, not as an order, and blocks it", "then tells you exactly what it caught"].map((t, i) => (
                   <li key={t} data-muse-step={i} className="flex items-baseline gap-4 text-[clamp(1.2rem,2vw,1.7rem)] font-extrabold lowercase leading-tight tracking-[-0.03em] text-[#6b6b6b] transition-colors duration-300 data-[on=true]:text-white">
                     <span className="font-sans text-[13px] font-semibold tabular-nums">0{i + 1}</span>{t}
                   </li>
@@ -391,28 +409,37 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
             <div data-muse-phone className="relative mx-auto w-full max-w-[440px] rounded-[30px] border border-[#2a2a2a] bg-[#0c0c0c] p-5 shadow-[0_40px_120px_-30px_rgb(0_0_0/1)]">
               <div className="flex items-center justify-between border-b border-[#1f1f1f] pb-4 font-sans">
                 <div>
-                  <p className="text-[14px] font-semibold text-white">Mid-century walnut desk</p>
-                  <p className="text-[12.5px] text-muted">listed at $120 · lowest you accept ${muse.floor}</p>
+                  <p className="text-[14px] font-semibold text-white">Your inbox</p>
+                  <p className="text-[12.5px] text-muted">8 new emails · AI assistant on</p>
                 </div>
                 <span data-muse-who className="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-[12.5px] font-extrabold uppercase tracking-[0.08em] text-black shadow-[0_0_0_4px_rgb(255_255_255/0.12)]"><span className="size-1.5 rounded-full bg-black pulse-ring" aria-hidden /><span data-muse-who-label>careless agent</span></span>
               </div>
               <div className="relative mt-5 min-h-[360px] space-y-3 font-sans">
-                {muse.thread.map((m) => (
-                  <p key={m.id} data-muse-buyer className="ml-auto w-fit max-w-[86%] rounded-[20px] rounded-br-[6px] border border-[#2a2a2a] bg-[#161616] px-4 py-2.5 text-[15px] text-ink-2"><span className="mb-0.5 block text-[11px] font-semibold uppercase tracking-wider text-muted">buyer</span>{m.text}</p>
-                ))}
+                <div data-muse-buyer className="rounded-[18px] border border-[#2a2a2a] bg-[#161616] px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">email · {muse.email.from}</p>
+                  <p className="mt-1 text-[14.5px] font-semibold text-white">{muse.email.subject}</p>
+                  <p className="mt-1 text-[13.5px] leading-snug text-ink-2">
+                    {(() => {
+                      const i = muse.email.body.indexOf("SYSTEM NOTE");
+                      if (i < 0) return muse.email.body;
+                      return <>{muse.email.body.slice(0, i)}<mark className="rounded-[4px] bg-white px-1 font-semibold text-black [box-decoration-break:clone]">{muse.email.body.slice(i)}</mark></>;
+                    })()}
+                  </p>
+                  <p className="mt-2 text-[11.5px] text-muted">highlighted: the hidden instruction, written for the AI, not for you</p>
+                </div>
                 <div data-muse-naive className="relative mb-4 w-fit max-w-[86%]">
                   <p className="rounded-[20px] rounded-bl-[6px] bg-[#f2f2f2] px-4 py-2.5 text-[15px] text-black"><span className="mb-0.5 block text-[11px] font-semibold uppercase tracking-wider text-[#6b6b6b]">careless agent</span><span data-muse-naive-text className="[text-decoration-color:transparent] [text-decoration-line:line-through] [text-decoration-thickness:2px] transition-[text-decoration-color] duration-300">{muse.naive}</span></p>
-                  <span data-muse-sent className="mt-1.5 block text-[12px] text-muted">sent · your address is out</span>
+                  <span data-muse-sent className="mt-1.5 block text-[12px] text-muted">sent · 3 invoices forwarded</span>
                   <div data-muse-harm className="mt-3 space-y-1.5 rounded-[14px] border-2 border-white bg-black p-3">
-                    <p className="text-[13.5px] font-bold text-white">A stranger is heading to your door.</p>
-                    <p className="text-[13.5px] font-bold text-white">You just lost $110 on the sale.</p>
+                    <p className="text-[13.5px] font-bold text-white">Your invoices are now in a stranger&apos;s inbox.</p>
+                    <p className="text-[13.5px] font-bold text-white">Amounts, clients and bank details included.</p>
                   </div>
-                  <span data-muse-stamp="0" className="absolute -right-12 top-3 rotate-[-8deg] rounded-md border-[3px] border-white bg-black px-3 py-1 text-[13px] font-black uppercase tracking-wider text-white">blocked · price too low</span>
-                  <span data-muse-stamp="1" className="absolute -right-3 top-[60px] rotate-[6deg] rounded-md border-[3px] border-white bg-black px-3 py-1 text-[13px] font-black uppercase tracking-wider text-white">blocked · home address</span>
+                  <span data-muse-stamp="0" className="absolute -right-12 top-3 rotate-[-8deg] rounded-md border-[3px] border-white bg-black px-3 py-1 text-[13px] font-black uppercase tracking-wider text-white">blocked · unknown address</span>
+                  <span data-muse-stamp="1" className="absolute -right-3 top-[60px] rotate-[6deg] rounded-md border-[3px] border-white bg-black px-3 py-1 text-[13px] font-black uppercase tracking-wider text-white">blocked · hidden order</span>
                 </div>
                 <div data-muse-safe className="w-fit max-w-[86%]">
-                  <p className="rounded-[20px] rounded-bl-[6px] bg-white px-4 py-2.5 text-[15px] text-black"><span className="mb-0.5 block text-[11px] font-semibold uppercase tracking-wider text-[#6b6b6b]">noctua</span>{muse.safe}<span className="mt-2 block text-[12px] text-[#6b6b6b]">— Sent by Noctua, an AI assistant, on behalf of Alex</span></p>
-                  <span className="mt-1.5 block text-[12px] text-ink-2">waits for your approval before sending</span>
+                  <p className="rounded-[20px] rounded-bl-[6px] bg-white px-4 py-2.5 text-[15px] text-black"><span className="mb-0.5 block text-[11px] font-semibold uppercase tracking-wider text-[#6b6b6b]">noctua</span>{muse.safe}</p>
+                  <span className="mt-1.5 block text-[12px] text-ink-2">nothing was forwarded · the email is set aside for you</span>
                 </div>
               </div>
             </div>
