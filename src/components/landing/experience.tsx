@@ -80,19 +80,29 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
     const ctx = gsap.context(() => {
       const q = gsap.utils.selector(root);
 
-      // 1. Scribble intro, then hero reveal
-      const scribble = q("[data-scribble] path")[0] as unknown as SVGPathElement | undefined;
+      // 1. Scribble transition (on load, and again when the logo is clicked), then hero reveal
+      const path = q("[data-scribble] path")[0] as unknown as SVGPathElement | undefined;
+      const logoLayer = q("[data-scribble-logo]")[0];
+      const scribble = (onCovered?: () => void) => {
+        if (!path || gsap.isTweening(path)) return gsap.timeline();
+        const len = path.getTotalLength() + 5;
+        const IN = 1.5, OUT = 1.8;
+        gsap.set(q("[data-scribble]"), { display: "block", scale: 0.55 });
+        gsap.set(path, { strokeDasharray: len, strokeDashoffset: len, strokeWidth: "2%" });
+        const wiggle = gsap.to(q("[data-scribble-wiggle]"), { rotation: 6, duration: 0.15, repeat: -1, yoyo: true, ease: "steps(1)", paused: true });
+        return gsap.timeline({ onComplete: () => { wiggle.kill(); gsap.set(q("[data-scribble]"), { display: "none" }); } })
+          .to(path, { strokeDashoffset: 0, duration: IN, ease: "power1.inOut" }, 0)
+          .to(path, { strokeWidth: "9%", duration: IN, ease: "power2.inOut" }, 0)
+          .to(logoLayer, { autoAlpha: 1, duration: IN * 0.4, ease: "power2.out", onStart: () => { wiggle.play(); } }, IN * 0.55)
+          .call(() => { lenis.scrollTo(0, { immediate: true }); onCovered?.(); }, undefined, IN)
+          .to(path, { strokeDashoffset: -len, duration: OUT, ease: "power2.inOut" }, IN)
+          .to(path, { strokeWidth: "2%", duration: OUT, ease: "power2.inOut" }, IN)
+          .to(logoLayer, { autoAlpha: 0, duration: 0.25 }, IN + OUT * 0.4);
+      };
       const intro = gsap.timeline();
-      if (scribble) {
-        const len = scribble.getTotalLength();
-        gsap.set(scribble, { strokeDasharray: len, strokeDashoffset: len });
-        intro.to(scribble, { strokeDashoffset: 0, duration: 0.75, ease: "power2.in" })
-          .fromTo(q("[data-scribble-owl]"), { scale: 0, rotation: -30 }, { scale: 1, rotation: 0, duration: 0.5, ease: "back.out(2)" }, "-=0.25")
-          .to(q("[data-scribble-owl]"), { scale: 0, duration: 0.25, ease: "back.in(2)" }, "+=0.15")
-          .to(scribble, { strokeDashoffset: -len, duration: 0.75, ease: "power2.out" })
-          .set(q("[data-scribble]"), { display: "none" });
-      }
-      intro.from(q("[data-word] > span"), { yPercent: 115, duration: 1.1, ease: "expo.out", stagger: 0.07 }, "-=0.55")
+      intro.add(scribble(), 0).addLabel("reveal", 1.5 + 1.8 * 0.45);
+      q("[data-logo]").forEach((el) => el.addEventListener("click", (e) => { e.preventDefault(); scribble(); }));
+      intro.from(q("[data-word] > span"), { yPercent: 115, duration: 1.1, ease: "expo.out", stagger: 0.07 }, "reveal")
         .from(q("[data-hero-fade]"), { y: 24, opacity: 0, duration: 0.8, ease: "power3.out", stagger: 0.08 }, "-=0.8")
         .from(q("[data-sticker]"), { scale: 0, rotation: () => gsap.utils.random(-50, 50), duration: 0.9, ease: "back.out(1.8)", stagger: 0.12 }, "-=0.7")
         .fromTo(q("[data-underline] path"), { strokeDasharray: 600, strokeDashoffset: 600 }, { strokeDashoffset: 0, duration: 1.2, ease: "power2.out" }, "-=0.6");
@@ -203,12 +213,16 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
 
   return (
     <div ref={root} className="overflow-x-clip bg-black font-display text-ink">
-      {/* Scribble intro */}
-      <div data-scribble className="pointer-events-none fixed inset-0 z-[70] grid place-items-center" aria-hidden>
-        <svg className="absolute inset-0 h-full w-full" viewBox="0 0 1000 1000" preserveAspectRatio="none">
-          <path d="M-60 120 C 200 40, 500 260, 1060 100 S 80 380, 1060 330 S -40 600, 1060 560 S 60 820, 1060 790 S 300 1000, 1060 980" fill="none" stroke="#fafafa" strokeWidth="230" strokeLinecap="round" />
-        </svg>
-        <div data-scribble-owl className="relative"><Owl size={140} track={false} /></div>
+      {/* Scribble transition: a pen stroke that thickens as it draws, covers the screen, then un-draws */}
+      <svg data-scribble className="pointer-events-none fixed left-[-50vw] top-[-50vh] z-[70] h-[200vh] w-[200vw] text-[#ececec]" viewBox="0 0 1000 1000" preserveAspectRatio="none" fill="none" aria-hidden>
+        <path d="M70 49 C376 31 681 89 943 71 C636 53 330 131 67 113 C365 95 663 176 918 158 C623 140 329 196 76 178 C379 160 681 246 940 228 C633 210 325 282 61 264 C362 246 664 307 922 289 C628 271 333 361 81 343 C380 325 679 387 935 369 C628 351 321 421 58 403 C362 385 667 472 928 454 C632 436 337 493 83 475 C379 457 675 537 929 519 C624 501 319 580 57 562 C364 544 671 601 935 583 C636 565 337 652 81 634 C376 616 670 685 922 667 C621 649 319 713 61 695 C368 677 676 766 940 748 C638 730 336 790 77 772 C371 754 666 827 918 809 C620 791 322 876 66 858 C373 840 680 897 943 879 C638 861 332 943 71 925 C367 907 663 983 917 965"
+          stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" style={{ strokeWidth: "0%" }} />
+      </svg>
+      <div data-scribble-logo className="pointer-events-none fixed inset-0 z-[71] grid place-items-center opacity-0" aria-hidden>
+        <div className="flex flex-col items-center gap-3 text-black">
+          <div data-scribble-wiggle><Owl size={120} track={false} /></div>
+          <span className="text-[44px] font-black tracking-[-0.07em]">noctua</span>
+        </div>
       </div>
 
       {/* Cursor bubble */}
@@ -216,7 +230,7 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
 
       {/* Nav */}
       <header className="fixed inset-x-0 top-0 z-50 flex items-center justify-between px-5 py-4 mix-blend-difference sm:px-9">
-        <Link href="/" data-bubble="home" className="text-[24px] font-black tracking-[-0.07em] text-white">noctua</Link>
+        <Link href="/" data-logo data-bubble="replay" className="text-[24px] font-black tracking-[-0.07em] text-white">noctua</Link>
         <nav aria-label="Main" className="hidden items-center gap-8 text-[14.5px] font-semibold lowercase text-white md:flex">
           <a href="#how" data-bubble="scroll">how it works</a>
           <a href="#muse" data-bubble="scroll">the muse test</a>
@@ -233,7 +247,7 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
             <div className="pointer-events-none absolute inset-0 [background-image:radial-gradient(#242424_1px,transparent_1px)] [background-size:24px_24px]" aria-hidden />
             <div data-depth="40" className="absolute right-[9%] top-[15%]"><div data-sticker className="owl-float rotate-[8deg]"><Owl size={170} /></div></div>
             <div data-depth="-30" className="absolute right-[34%] top-[22%] hidden sm:block"><div data-sticker><Star s={58} /></div></div>
-            <div data-depth="55" className="absolute right-[30%] top-[46%] hidden lg:block"><div data-sticker className="rotate-[-12deg]"><Zero /></div></div>
+            <div data-depth="55" className="absolute right-[24%] top-[64%] hidden xl:block"><div data-sticker className="rotate-[-12deg]"><Zero /></div></div>
             <div data-depth="-45" className="absolute right-[6%] top-[52%] hidden lg:block"><div data-sticker className="rotate-[14deg]"><Shield /></div></div>
 
             <p data-hero-fade className="relative mb-7 max-w-[360px] font-sans text-[15.5px] leading-relaxed text-ink-2">

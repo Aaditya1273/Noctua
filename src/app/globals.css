@@ -84,6 +84,7 @@ h1.font-serif, h2.font-serif, .font-serif { letter-spacing: -0.035em; font-weigh
 .vmarquee-down { animation: vdown 26s linear infinite; }
 @keyframes vup { from { transform: translateY(0); } to { transform: translateY(-50%); } }
 @keyframes vdown { from { transform: translateY(-50%); } to { transform: translateY(0); } }
-.no-motion [data-scribble] { display: none; }
+.no-motion [data-scribble], .no-motion [data-scribble-logo] { display: none; }
+[data-scribble] { display: none; transform-origin: 50% 50%; }
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
