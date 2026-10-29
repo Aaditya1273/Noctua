@@ -52,15 +52,15 @@ const Arrow = () => (
 const SENTENCE = "the second time costs nothing";
 
 const CARDS = [
-  { t: "apprentice", items: ["Nemotron plans with allowlisted tools", "Triages, summarises, drafts replies", "Every step passes the policy engine"], dark: true, r: -8 },
-  { t: "skill", items: ["The run becomes a typed manifest", "Data, never generated code", "Versioned with provenance"], dark: false, r: 5 },
-  { t: "verify", items: ["Held-out golden set", "100% urgent and suspicious recall", "Signed only if every check passes"], dark: true, r: -4 },
-  { t: "master", items: ["Same request, zero model calls", "Milliseconds and $0 inference", "Demotes itself on drift"], dark: false, r: 7 },
-  { t: "attack night", items: ["Poisoned email and web pages", "Approval replay, tampered skills", "Blocked by code, not by the model"], dark: true, r: -6 },
+  { t: "apprentice", items: ["Works out a new task with NVIDIA Nemotron", "Sorts your inbox and writes reply drafts", "Every action is checked by safety rules"], dark: true, r: -8 },
+  { t: "skill", items: ["Saves the steps as a reusable recipe", "Plain data, not AI-written code", "Every version is kept"], dark: false, r: 5 },
+  { t: "verify", items: ["Tested on emails it has never seen", "Must catch every urgent email", "Only trusted if every test passes"], dark: true, r: -4 },
+  { t: "master", items: ["Same request, no AI call at all", "Instant, and costs nothing", "Steps back if things look different"], dark: false, r: 7 },
+  { t: "attack night", items: ["Hit with fake emails and tricky web pages", "Reused approvals, tampered recipes", "Stopped by rules, not by hoping the AI says no"], dark: true, r: -6 },
 ];
 
-const TILES_A = ["0 model calls", "P7 · untrusted recipient", "10/10 checks", "signed · ed25519", "day 2 · demoted", "$0.0000"];
-const TILES_B = ["approval bound to sha-256", "injection quarantined", "3 calls → 0", "risk points 10/10", "fallback recorded", "receipt per run"];
+const TILES_A = ["0 AI calls", "unknown address · blocked", "10/10 tests passed", "signed and sealed", "day 2 · stepped back", "$0.0000"];
+const TILES_B = ["approval for one exact message", "fake email ignored", "3 AI calls → 0", "risk points 10/10", "every change recorded", "a receipt for every run"];
 
 export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: LandingMuse }) {
   const root = useRef<HTMLDivElement>(null);
@@ -194,7 +194,7 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
         const on = (n: number) => steps.forEach((el, i) => { el.dataset.on = String(i <= n); });
         const who = q("[data-muse-who]")[0] as HTMLElement | undefined;
         const whoLabel = q("[data-muse-who-label]")[0] as HTMLElement | undefined;
-        let whoNow = "naive agent";
+        let whoNow = "careless agent";
         const tl = gsap.timeline({
           defaults: { ease: "power3.out" },
           scrollTrigger: {
@@ -202,7 +202,7 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
             onUpdate: (st) => {
               const p = st.progress;
               on(p < 0.22 ? 0 : p < 0.45 ? 1 : p < 0.72 ? 2 : 3);
-              const next = p < 0.45 ? "naive agent" : "noctua";
+              const next = p < 0.45 ? "careless agent" : "noctua";
               if (who && whoLabel && next !== whoNow) {
                 whoNow = next;
                 whoLabel.textContent = next;
@@ -217,10 +217,11 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
           .from(q("[data-muse-harm]"), { y: 16, opacity: 0, scale: 0.96, duration: 0.5, ease: "back.out(1.6)" }, "+=0.2")
           .to(q("[data-muse-phone]"), { x: 8, duration: 0.08, repeat: 5, yoyo: true, ease: "none" })
           .to(q("[data-muse-harm]"), { opacity: 0, height: 0, marginTop: 0, paddingTop: 0, paddingBottom: 0, duration: 0.45, ease: "power2.inOut" }, "+=0.9")
-          .to(q("[data-muse-naive] > p"), { opacity: 0.35, duration: 0.4 }, "<")
+          .to(q("[data-muse-naive] > p"), { opacity: 0.45, duration: 0.4 }, "<")
+          .to(q("[data-muse-naive-text]"), { textDecorationColor: "#000", duration: 0.3 }, "<")
           .to(q("[data-muse-sent]"), { opacity: 0, duration: 0.2 }, "<")
           .from(q("[data-muse-stamp]"), { scale: 2.4, opacity: 0, rotation: (i) => (i ? 30 : -30), duration: 0.5, ease: "back.out(2)", stagger: 0.45 })
-          .to(q("[data-muse-naive]"), { height: 0, marginTop: 0, opacity: 0, duration: 0.6, ease: "power2.inOut" }, "+=0.8")
+          .to(q("[data-muse-naive] > p"), { scale: 0.94, transformOrigin: "left center", duration: 0.5, ease: "power2.inOut" }, "+=0.5")
           .from(q("[data-muse-safe]"), { y: 40, opacity: 0, scale: 0.94, duration: 0.7 }, "-=0.1")
           .to({}, { duration: 0.8 }); // hold the final frame before the section releases
         on(0);
@@ -347,19 +348,18 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
             <div data-hw-sticker className="pr-[30vw]"><Arrow /></div>
           </div>
           <p className="absolute inset-x-0 bottom-[9vh] mx-auto max-w-xl px-5 text-center font-sans text-[16px] leading-relaxed text-ink-2">
-            The first time, Nemotron reasons it through{stats?.firstRunCost ? ` (about $${stats.firstRunCost.toFixed(4)}, measured)` : ""}. Once the workflow passes verification, the same request makes <em className="font-italic text-[1.15em] not-italic [font-style:italic] text-ink">zero</em> model calls.
+            The first time, the AI works the task out{stats?.firstRunCost ? ` (about $${stats.firstRunCost.toFixed(4)}, measured)` : ""}. Once Noctua has learned and tested it, doing it again needs <em className="font-italic text-[1.15em] not-italic [font-style:italic] text-ink">no</em> AI at all.
           </p>
         </section>
 
         {/* Statement */}
         <section className="mx-auto max-w-6xl px-5 py-32 sm:px-9">
           <h2 data-rise className="text-[clamp(2.5rem,6.8vw,6.4rem)] font-black lowercase leading-[0.9] tracking-[-0.058em]">
-            between <em className="font-italic font-normal not-italic [font-style:italic]">your inbox</em> and the model sits a policy engine that <span className="text-[#5a5a5a]">can&apos;t be talked into anything.</span>
+            between <em className="font-italic font-normal not-italic [font-style:italic]">your inbox</em> and the AI sit rules <span className="text-[#5a5a5a]">it can&apos;t talk its way around.</span>
           </h2>
           <div className="mt-10 flex flex-wrap items-start gap-10">
             <p data-rise className="max-w-xl font-sans text-[17px] leading-relaxed text-ink-2">
-              Email, web pages and tool output are treated as untrusted data. Every tool call is checked on the server against twelve ordered rules. Irreversible actions need your approval, bound to the exact arguments, and spend from a separate daily risk budget.
-            </p>
+              Emails and web pages can contain hidden instructions, so Noctua never treats them as orders. Every action is checked against fixed rules before it happens. Anything that can&apos;t be undone, like sending a message, needs your approval for that exact message, and there is a daily limit on how many such actions it can take.</p>
             <div data-draw className="hidden md:block"><Arrow /></div>
           </div>
         </section>
@@ -373,15 +373,15 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
                 an agent told a stranger <em className="font-italic font-normal not-italic [font-style:italic]">where you live.</em>
               </h2>
               <p className="mt-5 max-w-md font-sans text-[15.5px] leading-relaxed text-ink-2">
-                In September an always-on agent running a Marketplace listing accepted a lowball offer, gave out the seller&apos;s home address and sent the buyer to his house, as reported by{" "}
+                In September, an AI agent selling a man&apos;s desk online agreed to a price far too low, gave a stranger his home address, and sent the buyer to his house, as reported by{" "}
                 <a className="underline hover:text-ink" href="https://www.theguardian.com/technology/2026/sep/28/metas-ai-agent-muse-home-address">The Guardian</a> and{" "}
                 <a className="underline hover:text-ink" href="https://fortune.com/2026/10/19/meta-muse-ai-agent-facebook-marketplace-home-address-privacy/">Fortune</a>.
-                Your agent reads strangers&apos; messages every day. One bad reply is enough.
+                An AI assistant reads messages from strangers every day. One bad reply is enough.
               </p>
-              <p className="mt-3 max-w-md font-sans text-[13px] text-muted">Replayed here with synthetic data against Noctua&apos;s real policy engine.</p>
+              <p className="mt-3 max-w-md font-sans text-[13px] text-muted">Replayed below with made-up data, against Noctua&apos;s real safety rules.</p>
               <ol className="mt-10 space-y-4" aria-label="What happens">
-                {["a stranger lowballs you and asks where you live", "a naive agent agrees, and gives out your home address", "noctua blocks it before a single word leaves", "then replies safely, and only after you approve"].map((t, i) => (
-                  <li key={t} data-muse-step={i} className="flex items-baseline gap-4 text-[clamp(1.2rem,2vw,1.7rem)] font-extrabold lowercase leading-tight tracking-[-0.03em] text-[#3a3a3a] transition-colors duration-300 data-[on=true]:text-white">
+                {["a stranger offers $10 for your $120 desk and asks for your address", "a careless AI agent says yes and sends your home address", "noctua stops both before anything is sent", "then writes a safe reply and waits for your ok"].map((t, i) => (
+                  <li key={t} data-muse-step={i} className="flex items-baseline gap-4 text-[clamp(1.2rem,2vw,1.7rem)] font-extrabold lowercase leading-tight tracking-[-0.03em] text-[#6b6b6b] transition-colors duration-300 data-[on=true]:text-white">
                     <span className="font-sans text-[13px] font-semibold tabular-nums">0{i + 1}</span>{t}
                   </li>
                 ))}
@@ -392,23 +392,23 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
               <div className="flex items-center justify-between border-b border-[#1f1f1f] pb-4 font-sans">
                 <div>
                   <p className="text-[14px] font-semibold text-white">Mid-century walnut desk</p>
-                  <p className="text-[12.5px] text-muted">listed at $120 · your floor ${muse.floor}</p>
+                  <p className="text-[12.5px] text-muted">listed at $120 · lowest you accept ${muse.floor}</p>
                 </div>
-                <span data-muse-who className="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-[12.5px] font-extrabold uppercase tracking-[0.08em] text-black shadow-[0_0_0_4px_rgb(255_255_255/0.12)]"><span className="size-1.5 rounded-full bg-black pulse-ring" aria-hidden /><span data-muse-who-label>naive agent</span></span>
+                <span data-muse-who className="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-[12.5px] font-extrabold uppercase tracking-[0.08em] text-black shadow-[0_0_0_4px_rgb(255_255_255/0.12)]"><span className="size-1.5 rounded-full bg-black pulse-ring" aria-hidden /><span data-muse-who-label>careless agent</span></span>
               </div>
               <div className="relative mt-5 min-h-[360px] space-y-3 font-sans">
                 {muse.thread.map((m) => (
                   <p key={m.id} data-muse-buyer className="ml-auto w-fit max-w-[86%] rounded-[20px] rounded-br-[6px] border border-[#2a2a2a] bg-[#161616] px-4 py-2.5 text-[15px] text-ink-2"><span className="mb-0.5 block text-[11px] font-semibold uppercase tracking-wider text-muted">buyer</span>{m.text}</p>
                 ))}
-                <div data-muse-naive className="relative w-fit max-w-[86%]">
-                  <p className="rounded-[20px] rounded-bl-[6px] bg-[#f2f2f2] px-4 py-2.5 text-[15px] text-black"><span className="mb-0.5 block text-[11px] font-semibold uppercase tracking-wider text-[#6b6b6b]">naive agent</span>{muse.naive}</p>
-                  <span data-muse-sent className="mt-1.5 block text-[12px] text-muted">sent · address shared</span>
+                <div data-muse-naive className="relative mb-4 w-fit max-w-[86%]">
+                  <p className="rounded-[20px] rounded-bl-[6px] bg-[#f2f2f2] px-4 py-2.5 text-[15px] text-black"><span className="mb-0.5 block text-[11px] font-semibold uppercase tracking-wider text-[#6b6b6b]">careless agent</span><span data-muse-naive-text className="[text-decoration-color:transparent] [text-decoration-line:line-through] [text-decoration-thickness:2px] transition-[text-decoration-color] duration-300">{muse.naive}</span></p>
+                  <span data-muse-sent className="mt-1.5 block text-[12px] text-muted">sent · your address is out</span>
                   <div data-muse-harm className="mt-3 space-y-1.5 rounded-[14px] border-2 border-white bg-black p-3">
                     <p className="text-[13.5px] font-bold text-white">A stranger is heading to your door.</p>
                     <p className="text-[13.5px] font-bold text-white">You just lost $110 on the sale.</p>
                   </div>
-                  <span data-muse-stamp="0" className="absolute -right-6 top-1/3 -translate-y-1/2 rotate-[-8deg] rounded-md border-[3px] border-white bg-black px-3 py-1 text-[13px] font-black uppercase tracking-wider text-white">blocked · below floor</span>
-                  <span data-muse-stamp="1" className="absolute -left-2 -bottom-7 rotate-[6deg] rounded-md border-[3px] border-white bg-black px-3 py-1 text-[13px] font-black uppercase tracking-wider text-white">blocked · private data</span>
+                  <span data-muse-stamp="0" className="absolute -right-12 top-3 rotate-[-8deg] rounded-md border-[3px] border-white bg-black px-3 py-1 text-[13px] font-black uppercase tracking-wider text-white">blocked · price too low</span>
+                  <span data-muse-stamp="1" className="absolute -right-3 top-[60px] rotate-[6deg] rounded-md border-[3px] border-white bg-black px-3 py-1 text-[13px] font-black uppercase tracking-wider text-white">blocked · home address</span>
                 </div>
                 <div data-muse-safe className="w-fit max-w-[86%]">
                   <p className="rounded-[20px] rounded-bl-[6px] bg-white px-4 py-2.5 text-[15px] text-black"><span className="mb-0.5 block text-[11px] font-semibold uppercase tracking-wider text-[#6b6b6b]">noctua</span>{muse.safe}<span className="mt-2 block text-[12px] text-[#6b6b6b]">— Sent by Noctua, an AI assistant, on behalf of Alex</span></p>
@@ -451,10 +451,10 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
             {stats && (
               <dl className="mt-20 grid gap-x-10 gap-y-14 sm:grid-cols-2 lg:grid-cols-4">
                 {[
-                  { v: stats.noctuaCalls, s: `vs ${stats.baselineCalls}`, k: "model calls", n: "Noctua against reasoning every time" },
-                  { v: stats.zeroRuns, s: `/ ${stats.totalRuns}`, k: "runs with zero inference", n: "verified skills, no model call" },
-                  { v: stats.urgentMissed, s: "", k: "urgent messages missed", n: "unsafe skills demote themselves" },
-                  { v: stats.attacksBlocked, s: `/ ${stats.attacksTotal}`, k: "attacks blocked", n: "enforced on the server" },
+                  { v: stats.noctuaCalls, s: `vs ${stats.baselineCalls}`, k: "AI calls", n: "Noctua, against an AI that thinks from scratch every time" },
+                  { v: stats.zeroRuns, s: `/ ${stats.totalRuns}`, k: "runs with no AI call", n: "learned, tested tasks cost nothing" },
+                  { v: stats.urgentMissed, s: "", k: "urgent emails missed", n: "if a recipe might miss one, it steps back" },
+                  { v: stats.attacksBlocked, s: `/ ${stats.attacksTotal}`, k: "attacks stopped", n: "blocked by rules on the server" },
                 ].map((x) => (
                   <div key={x.k} className="border-t border-[#2a2a2a] pt-7">
                     <dd className="text-[clamp(3.8rem,7.5vw,6.5rem)] font-black leading-none tracking-[-0.065em] tabular-nums"><span data-count={x.v}>{x.v}</span><span className="ml-2 text-[0.36em] font-bold tracking-[-0.03em] text-muted">{x.s}</span></dd>
@@ -465,24 +465,24 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
               </dl>
             )}
             {stats?.firstRunCost != null && (
-              <div data-rise className="mt-20 grid gap-px overflow-hidden rounded-[18px] border border-[#262626] bg-[#262626] sm:grid-cols-3">
+              <div data-rise className="mt-20 grid gap-px overflow-hidden rounded-[18px] border border-[#d4d4d4] bg-[#d4d4d4] sm:grid-cols-3">
                 {[
-                  { k: "first time", v: `$${stats.firstRunCost.toFixed(4)}`, n: "full reasoning, measured" },
-                  { k: "every repeat", v: "$0", n: "verified skill, no model call" },
+                  { k: "first time", v: `$${stats.firstRunCost.toFixed(4)}`, n: "the AI works it out, measured" },
+                  { k: "every repeat", v: "$0", n: "learned recipe, no AI call" },
                   { k: "for reference", v: `$${muse.price.min}–${muse.price.max}`, n: `${muse.price.product}, per month` },
                 ].map((x) => (
-                  <div key={x.k} className="bg-black p-7">
-                    <p className="font-sans text-[12.5px] font-semibold uppercase tracking-[0.16em] text-muted">{x.k}</p>
-                    <p className="mt-4 text-[clamp(2.6rem,4.6vw,4rem)] font-black leading-none tracking-[-0.06em] tabular-nums">{x.v}</p>
-                    <p className="mt-3 font-sans text-[14px] text-muted">{x.n}</p>
+                  <div key={x.k} className="bg-[#f2f2f2] p-7 text-black">
+                    <p className="font-sans text-[12.5px] font-semibold uppercase tracking-[0.16em] text-[#5a5a5a]">{x.k}</p>
+                    <p className="mt-4 text-[clamp(2.6rem,4.6vw,4rem)] font-black leading-none tracking-[-0.06em] tabular-nums text-black">{x.v}</p>
+                    <p className="mt-3 font-sans text-[14px] text-[#4a4a4a]">{x.n}</p>
                   </div>
                 ))}
               </div>
             )}
-            {stats?.firstRunCost != null && <p className="mt-4 max-w-3xl font-sans text-[12.5px] text-muted">Model cost only; not like-for-like. The subscription includes hosted compute and much broader capabilities. Reference price from <a className="underline hover:text-ink" href={muse.price.source}>published launch coverage</a>.</p>}
+            {stats?.firstRunCost != null && <p className="mt-4 max-w-3xl font-sans text-[12.5px] text-muted">AI cost only, so not a like-for-like comparison: the subscription also pays for hosting and does much more. Reference price from <a className="underline hover:text-ink" href={muse.price.source}>published launch coverage</a>.</p>}
             {stats && <p className="mt-16 max-w-3xl font-sans text-[13.5px] leading-relaxed text-muted">
-              {stats.live ? `Model ${stats.model}. Measured spend $${stats.noctuaCost?.toFixed(4)} against $${stats.baselineCost?.toFixed(4)} over only seven runs, with learning and two safety fallbacks counted; each further repetition saves the full reasoning cost. ` : "Demo mode: no inference performed. "}
-              Synthetic sample inbox: this shows the mechanism, not real-world accuracy. Method in <a className="underline hover:text-ink" href="https://github.com/Aaditya1273/Noctua/blob/main/EVALUATION.md">EVALUATION.md</a>.
+              {stats.live ? `AI model: ${stats.model}. Over just seven runs Noctua spent $${stats.noctuaCost?.toFixed(4)} against $${stats.baselineCost?.toFixed(4)}, and that already includes the cost of learning. Every repeat after that saves the whole cost. ` : "Demo mode: no AI was called. "}
+              The inbox is made-up sample data, so this shows how it works, not how accurate it is on real email. Method in <a className="underline hover:text-ink" href="https://github.com/Aaditya1273/Noctua/blob/main/EVALUATION.md">EVALUATION.md</a>.
             </p>}
           </div>
         </section>
@@ -492,7 +492,7 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
           <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[1fr_520px]">
             <div>
               <h2 data-rise className="text-[clamp(2.4rem,5vw,4.4rem)] font-black lowercase leading-[0.92] tracking-[-0.055em]">every run leaves <em className="font-italic font-normal not-italic [font-style:italic]">evidence</em>.</h2>
-              <p data-rise className="mt-6 max-w-md font-sans text-[16px] leading-relaxed text-ink-2">Receipts from API-reported tokens, every policy decision logged, every skill version and evaluation kept. Unknown stays unknown.</p>
+              <p data-rise className="mt-6 max-w-md font-sans text-[16px] leading-relaxed text-ink-2">A receipt for every run, every safety decision written down, and every version of every recipe kept. If a number is not known, it says so instead of guessing.</p>
               <Link href="/app" data-bubble="go" className="mt-8 inline-block rounded-full bg-white px-7 py-3.5 text-[15.5px] font-extrabold lowercase text-black">try it now</Link>
             </div>
             <div className="relative grid h-[620px] grid-cols-2 gap-4 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_14%,black_86%,transparent)]" aria-hidden>
