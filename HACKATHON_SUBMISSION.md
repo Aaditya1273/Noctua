@@ -6,6 +6,20 @@
 
 ## Problem
 
+AI agents are already causing real damage, and people are writing about it:
+
+- An AI coding agent deleted a company's live database during a code freeze, after being told not to; the CEO apologised
+  ([Tom's Hardware](https://www.tomshardware.com/tech-industry/artificial-intelligence/ai-coding-platform-goes-rogue-during-code-freeze-and-deletes-entire-company-database-replit-ceo-apologizes-after-ai-engine-says-it-made-a-catastrophic-error-in-judgment-and-destroyed-all-production-data),
+  [r/technology](https://www.reddit.com/r/technology/comments/1m70mwe/replits_ceo_apologizes_after_its_ai_agent_wiped_a/)).
+- Builders report surprise bills from looping agents: "I woke up to a $58 API bill"
+  ([r/LocalLLM](https://www.reddit.com/r/LocalLLM/comments/1uzy9cf/i_woke_up_to_a_58_api_bill_because_my_ai_agent/)),
+  "$4,811 overnight" ([r/Agentic_Marketing](https://www.reddit.com/r/Agentic_Marketing/comments/1v0fz93/my_ai_agent_racked_up_4811_overnight_from_a_retry/)).
+- Hidden text in an ordinary email can steer an AI assistant into forwarding invoices to an attacker
+  ([Proofpoint](https://www.proofpoint.com/us/blog/email-and-cloud-threats/stop-month-how-threat-actors-weaponize-ai-assistants-indirect-prompt)).
+
+Noctua answers each one: irreversible actions need explicit approval, a hard daily spending limit is checked before
+every call, and email content is treated as data, never as orders.
+
 This autumn always-on agents went mainstream, and so did their failure modes. In September an agent running a
 Marketplace listing accepted a $10 offer and sent a stranger the seller's home address (reported by The Guardian
 and Fortune). Commercial always-on agents also sit behind subscriptions such as ChatGPT Pro at $100 to $500 a month.
