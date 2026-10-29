@@ -127,7 +127,8 @@ async function runApprentice(s: ExecState, prompt: string): Promise<{ plan: Plan
       s.actions.push({ tool: p.tool, args: p.args, decision: pr.decision.decision, rule: pr.decision.rule, reason: pr.decision.reason, approvalId: pr.decision.approvalId, origin });
     }
   }
-  if (!s.items) return { plan, status: "failed", error: "The plan finished without triaging the inbox." };
+  // A request that only asks for an action (e.g. "forward X") is complete once policy has decided on it.
+  if (!s.items && s.actions.length === 0) return { plan, status: "failed", error: "The plan finished without triaging the inbox." };
   return { plan, status: "done" };
 }
 
