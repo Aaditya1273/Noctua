@@ -9,7 +9,7 @@ const italic = Instrument_Serif({ variable: "--font-instrument", subsets: ["lati
 
 export const metadata: Metadata = {
   title: { default: "Noctua — the AI that learns to stop thinking", template: "%s · Noctua" },
-  description: "A personal AI agent that turns your repeated tasks into verified, zero-inference workflows — with receipts, budgets and a policy engine it can't talk its way around.",
+  description: "The always-on personal agent on NVIDIA Nemotron that learns your repeated tasks, runs them with zero model calls, and can't be talked into a bad deal or giving out your address.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

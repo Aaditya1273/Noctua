@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { connection } from "next/server";
 import { LandingExperience, type LandingStats } from "@/components/landing/experience";
+import { LISTING, MARKET_THREAD, NAIVE_REPLY, PRICE_REFERENCE, REFERENCE_REPLY } from "@/lib/fixtures.ts";
 
 type Run = { tier: string; costUsd: number | null };
 type Results = {
@@ -37,5 +38,7 @@ function stats(): LandingStats {
 
 export default async function Landing() {
   await connection(); // render per request so a cached old copy is never served
-  return <LandingExperience stats={stats()} />;
+  const muse = { thread: MARKET_THREAD, naive: NAIVE_REPLY, safe: REFERENCE_REPLY, floor: LISTING.floorUsd,
+    price: { product: PRICE_REFERENCE.product, min: PRICE_REFERENCE.monthlyUsd.min, max: PRICE_REFERENCE.monthlyUsd.max, source: PRICE_REFERENCE.source } };
+  return <LandingExperience stats={stats()} muse={muse} />;
 }

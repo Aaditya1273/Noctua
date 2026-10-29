@@ -8,6 +8,14 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import { Owl } from "../owl";
 
+export type LandingMuse = {
+  thread: { id: string; from: string; text: string }[];
+  naive: string;
+  safe: string;
+  floor: number;
+  price: { product: string; min: number; max: number; source: string };
+};
+
 export type LandingStats = {
   live: boolean;
   date: string;
@@ -54,7 +62,7 @@ const CARDS = [
 const TILES_A = ["0 model calls", "P7 · untrusted recipient", "10/10 checks", "signed · ed25519", "day 2 · demoted", "$0.0000"];
 const TILES_B = ["approval bound to sha-256", "injection quarantined", "3 calls → 0", "risk points 10/10", "fallback recorded", "receipt per run"];
 
-export function LandingExperience({ stats }: { stats: LandingStats }) {
+export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: LandingMuse }) {
   const root = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -211,6 +219,7 @@ export function LandingExperience({ stats }: { stats: LandingStats }) {
         <Link href="/" data-bubble="home" className="text-[24px] font-black tracking-[-0.07em] text-white">noctua</Link>
         <nav aria-label="Main" className="hidden items-center gap-8 text-[14.5px] font-semibold lowercase text-white md:flex">
           <a href="#how" data-bubble="scroll">how it works</a>
+          <a href="#muse" data-bubble="scroll">the muse test</a>
           <a href="#proof" data-bubble="scroll">proof</a>
           <a href="https://github.com/Aaditya1273/Noctua" data-bubble="code">source</a>
         </nav>
@@ -228,7 +237,7 @@ export function LandingExperience({ stats }: { stats: LandingStats }) {
             <div data-depth="-45" className="absolute right-[6%] top-[52%] hidden lg:block"><div data-sticker className="rotate-[14deg]"><Shield /></div></div>
 
             <p data-hero-fade className="relative mb-7 max-w-[360px] font-sans text-[15.5px] leading-relaxed text-ink-2">
-              A personal AI agent on NVIDIA Nemotron and Nebius Token Factory. It learns the tasks you repeat, proves them, and stops paying to think about them.
+              A personal AI agent on NVIDIA Nemotron and Nebius Token Factory. It learns the tasks you repeat, proves them, and stops paying to think about them. It can&apos;t be talked into a bad deal or into giving out your address.
             </p>
             <h1 className="relative text-[clamp(3.3rem,11.5vw,12rem)] font-black leading-[0.84] tracking-[-0.068em]" aria-label="reason once. then never again.">
               <span aria-hidden>{words("reason")}<span data-word className="inline-block overflow-hidden pb-[0.1em] align-bottom"><span className="inline-block font-italic font-normal tracking-[-0.02em] [font-style:italic]">once.</span></span></span>
@@ -282,6 +291,41 @@ export function LandingExperience({ stats }: { stats: LandingStats }) {
           </div>
         </section>
 
+        {/* The Muse test */}
+        <section id="muse" className="scroll-mt-10 border-t border-[#161616] px-5 py-32 sm:px-9">
+          <div className="mx-auto max-w-6xl">
+            <p data-rise className="font-sans text-[13px] font-semibold uppercase tracking-[0.2em] text-muted">the muse test</p>
+            <h2 data-rise className="mt-4 max-w-4xl text-[clamp(2.4rem,6vw,5.6rem)] font-black lowercase leading-[0.9] tracking-[-0.058em]">
+              an agent sold a desk for <em className="font-italic font-normal not-italic [font-style:italic]">$10</em> and gave out a home address.
+            </h2>
+            <p data-rise className="mt-6 max-w-2xl font-sans text-[16.5px] leading-relaxed text-ink-2">
+              In September an always-on agent running a Marketplace listing did both, as reported by{" "}
+              <a className="underline hover:text-ink" href="https://www.theguardian.com/technology/2026/sep/28/metas-ai-agent-muse-home-address">The Guardian</a> and{" "}
+              <a className="underline hover:text-ink" href="https://fortune.com/2026/10/19/meta-muse-ai-agent-facebook-marketplace-home-address-privacy/">Fortune</a>. We replay the same conversation, with synthetic data, against Noctua&apos;s policy engine.
+            </p>
+            <div className="mt-14 grid gap-5 lg:grid-cols-2">
+              <div data-rise className="rounded-[18px] border border-[#262626] bg-[#0f0f0f] p-6">
+                <p className="font-sans text-[12px] font-semibold uppercase tracking-[0.18em] text-muted">a naive agent</p>
+                <div className="mt-5 space-y-2.5 font-sans">
+                  {muse.thread.map((m) => <p key={m.id} className="w-fit max-w-[92%] rounded-2xl rounded-bl-[4px] border border-[#2a2a2a] px-4 py-2.5 text-[15px] text-ink-2">{m.text}</p>)}
+                  <p className="ml-auto w-fit max-w-[92%] rounded-2xl rounded-br-[4px] bg-[#f2f2f2] px-4 py-2.5 text-[15px] text-black">{muse.naive}</p>
+                </div>
+                <p className="mt-5 font-sans text-[13px] text-muted">Sent. The deal is done and the address is out.</p>
+              </div>
+              <div data-rise className="rounded-[18px] bg-[#f2f2f2] p-6 text-black">
+                <p className="font-sans text-[12px] font-semibold uppercase tracking-[0.18em] text-[#6b6b6b]">noctua</p>
+                <ul className="mt-5 space-y-2.5 font-sans text-[15px]">
+                  <li className="rounded-2xl border border-black/15 px-4 py-2.5"><span className="font-semibold">Blocked · below floor.</span> The reply would commit to $10; your minimum is ${muse.floor}.</li>
+                  <li className="rounded-2xl border border-black/15 px-4 py-2.5"><span className="font-semibold">Blocked · private data.</span> A home address never leaves in a message, whoever asks.</li>
+                </ul>
+                <p className="mt-4 ml-auto w-fit max-w-[92%] rounded-2xl rounded-br-[4px] bg-black px-4 py-2.5 font-sans text-[15px] text-white">{muse.safe}<span className="mt-2 block text-[12px] text-[#9a9a9a]">— Sent by Noctua, an AI assistant, on behalf of Alex</span></p>
+                <p className="mt-5 font-sans text-[13px] text-[#555]">This reply is allowed, and it still waits for your approval before it is sent.</p>
+              </div>
+            </div>
+            <Link href="/app" data-bubble="try" className="mt-10 inline-block rounded-full bg-white px-7 py-3.5 text-[15.5px] font-extrabold lowercase text-black">run the muse replay yourself</Link>
+          </div>
+        </section>
+
         {/* Card fan */}
         <section id="how" className="scroll-mt-10 px-5 pb-36 pt-6 sm:px-9">
           <h2 data-rise className="mx-auto max-w-6xl text-[clamp(2.5rem,6.2vw,5.8rem)] font-black lowercase leading-[0.9] tracking-[-0.058em]">
@@ -325,6 +369,22 @@ export function LandingExperience({ stats }: { stats: LandingStats }) {
                 ))}
               </dl>
             )}
+            {stats?.firstRunCost != null && (
+              <div data-rise className="mt-20 grid gap-px overflow-hidden rounded-[18px] border border-[#262626] bg-[#262626] sm:grid-cols-3">
+                {[
+                  { k: "first time", v: `$${stats.firstRunCost.toFixed(4)}`, n: "full reasoning, measured" },
+                  { k: "every repeat", v: "$0", n: "verified skill, no model call" },
+                  { k: "for reference", v: `$${muse.price.min}–${muse.price.max}`, n: `${muse.price.product}, per month` },
+                ].map((x) => (
+                  <div key={x.k} className="bg-black p-7">
+                    <p className="font-sans text-[12.5px] font-semibold uppercase tracking-[0.16em] text-muted">{x.k}</p>
+                    <p className="mt-4 text-[clamp(2.6rem,4.6vw,4rem)] font-black leading-none tracking-[-0.06em] tabular-nums">{x.v}</p>
+                    <p className="mt-3 font-sans text-[14px] text-muted">{x.n}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+            {stats?.firstRunCost != null && <p className="mt-4 max-w-3xl font-sans text-[12.5px] text-muted">Model cost only; not like-for-like. The subscription includes hosted compute and much broader capabilities. Reference price from <a className="underline hover:text-ink" href={muse.price.source}>published launch coverage</a>.</p>}
             {stats && <p className="mt-16 max-w-3xl font-sans text-[13.5px] leading-relaxed text-muted">
               {stats.live ? `Model ${stats.model}. Measured spend $${stats.noctuaCost?.toFixed(4)} against $${stats.baselineCost?.toFixed(4)} over only seven runs, with learning and two safety fallbacks counted; each further repetition saves the full reasoning cost. ` : "Demo mode: no inference performed. "}
               Synthetic sample inbox: this shows the mechanism, not real-world accuracy. Method in <a className="underline hover:text-ink" href="https://github.com/Aaditya1273/Noctua/blob/main/EVALUATION.md">EVALUATION.md</a>.

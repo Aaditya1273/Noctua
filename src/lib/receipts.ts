@@ -1,6 +1,9 @@
 // Read models for receipts, history and the dashboard. Every number comes from persisted records;
 // missing values stay null and are rendered as "Unknown".
+import fs from "node:fs";
+import path from "node:path";
 import { db, json, startOfDayIso } from "./db.ts";
+import { PRICE_REFERENCE } from "./fixtures.ts";
 import type { TaskResult, TaskStatus } from "./orchestrator.ts";
 import type { Tier } from "./skills.ts";
 import type { TraceEntry } from "./tools.ts";
@@ -162,5 +165,32 @@ export function savingsToday() {
     avoidedCalls: callsKnown ? avoidedCalls : null,
     avoidedCostUsd: costKnown ? avoidedCost : null,
     basis: rows.length === 0 ? "none" : anyLive ? "measured" : "demo",
+  };
+}
+
+/**
+ * Honest price comparison: measured model spend per full-reasoning run (this deployment, else the
+ * recorded benchmark), a learned repeat at $0, and a monthly projection, against a published subscription.
+ */
+export function priceComparison() {
+  const runs = listTasks(500).filter((t) => t.tier === "apprentice" && t.status === "done" && t.mode === "live" && t.costUsd !== null && t.modelCalls > 0);
+  let perRun: number | null = runs.length ? runs.reduce((a, t) => a + (t.costUsd ?? 0), 0) / runs.length : null;
+  let basis = runs.length ? `measured on this deployment (${runs.length} live run${runs.length > 1 ? "s" : ""})` : "";
+  if (perRun === null) {
+    try {
+      const r = JSON.parse(fs.readFileSync(path.join(process.cwd(), "eval", "results.json"), "utf8")) as { mode: string; generatedAt: string; baseline: { runs: { costUsd: number | null }[] } };
+      const xs = r.baseline.runs.map((x) => x.costUsd).filter((x): x is number => x !== null);
+      if (r.mode === "live" && xs.length) {
+        perRun = xs.reduce((a, b) => a + b, 0) / xs.length;
+        basis = `measured in the live benchmark (${new Date(r.generatedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })})`;
+      }
+    } catch { /* no benchmark on disk */ }
+  }
+  return {
+    perRun,
+    basis: basis || "no live measurement yet",
+    monthlyIfNeverLearned: perRun === null ? null : perRun * 30,
+    repeatCost: 0,
+    reference: PRICE_REFERENCE,
   };
 }
