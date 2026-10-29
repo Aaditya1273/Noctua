@@ -72,7 +72,7 @@ for (const [i, day] of SEQUENCE.entries()) {
   if (rec.tier === "apprentice" && rec.status === "done") {
     const cand = await learnFromTask(taskId, { drafting: "template" });
     const { skill, report } = await evaluateSkill(cand.id);
-    lifecycle.push({ afterRun: i + 1, skillVersion: skill.version, tier: skill.tier, state: skill.state, checksPassed: report.passed, checksTotal: report.total, failed: report.checks.filter((c) => !c.passed).map((c) => c.id) });
+    lifecycle.push({ afterRun: i + 1, skillVersion: skill.version, synthesis: skill.synthesis, tier: skill.tier, state: skill.state, checksPassed: report.passed, checksTotal: report.total, failed: report.checks.filter((c) => !c.passed).map((c) => c.id) });
   }
 }
 const noctuaTotals = totals();

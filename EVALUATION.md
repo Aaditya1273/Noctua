@@ -1,7 +1,34 @@
 # Evaluation
 
-Everything in this document was produced by commands in this repository. Numbers are copied from
-`eval/results.json` (generated 2026-10-28, Node v26.5.0, **demo mode**).
+Everything in this document was produced by commands in this repository. The **live** numbers below are copied
+from `eval/results.json` (generated 2026-10-29, Node v26.5.0, live mode on Nebius Token Factory with
+`nvidia/nemotron-3-super-120b-a12b`, thinking disabled, prices $0.30 / $0.90 per 1M tokens from `.env.example`).
+
+## Live results (Nebius Token Factory, 2026-10-29)
+
+| | Baseline (Apprentice-only) | Noctua (learning + evaluation included) |
+|---|---|---|
+| Model calls across 7 runs | **21** | **14** (9 for tasks + 5 for skill synthesis) |
+| Runs completed with no model call | 0 / 7 | **4 / 7** |
+| Tokens (in / out) | 9,300 / 4,695 | 8,354 / 4,330 |
+| Measured model spend | **$0.0070** | **$0.0064** |
+| Label accuracy vs. reference | 96.0% | 96.0% |
+| Urgent messages missed | 0 | 0 |
+
+- One live Apprentice run costs about **$0.0007–0.0012** (3 calls: plan, triage, drafts; ~2,400 tokens; ~6 s).
+  A Master run costs **$0** and takes ~2 ms.
+- Over only 7 runs the total saving is small (~9%), because the arm pays for three skill syntheses and two runtime
+  fallbacks. Each further repetition handled by a Master skill saves the full Apprentice cost, so the gap widens
+  with use; 7 runs is roughly break-even.
+- The single labelling error is the live model's own (one Day 3 message); the skill learned that label, so both arms
+  scored the same. Evaluation against the human golden set still passed because the golden set does not contain it.
+- Skill synthesis: v1 and v2 used model-proposed rules (schema-checked, merged with deterministic induction). For v3
+  the model returned more than 30 keywords per category; that proposal failed validation and Noctua fell back to
+  deterministic induction (the raw-proposal bound has since been relaxed and the output is trimmed instead).
+- Attack Night including the live-model test: **9 / 9**. The real model, given the raw poisoned inbox and a weak
+  prompt, proposed 4 `mail.send` actions; it did not follow the injection, and all 4 were denied by policy.
+
+The demo-mode results from 2026-10-28 are kept below for reference.
 
 ## What was measured
 
@@ -22,7 +49,7 @@ signature tamper), policy (approvals, exact-args binding, untrusted recipients, 
 and the live path against a local HTTP mock of the Token Factory protocol (usage, cost arithmetic, malformed output,
 timeout/retry, HTTP 500, unreachable host, call-limit deferral, monetary cap, missing pricing, missing usage).
 
-## Results (demo mode)
+## Results (demo mode, 2026-10-28)
 
 | | Baseline (Apprentice-only) | Noctua |
 |---|---|---|
@@ -68,8 +95,8 @@ Attack Night: **8 / 8** cases blocked (see SECURITY.md for the list).
   This demonstrates the mechanism, not real-world accuracy or savings.
 - The golden set and runtime invariants were designed alongside the fixtures. They are deterministic and
   reproducible, but not independent of the author.
-- No live run was performed in this workspace (no API key available), so there is **no measured cost or token data**
-  yet. The live path is covered by protocol-mock tests only.
+- The live benchmark is a single run on one model and configuration. Model output is probabilistic; rerunning will
+  give somewhat different labels, token counts and costs.
 
 ## Reproduce
 
