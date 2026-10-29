@@ -1,9 +1,8 @@
 "use client";
 // Interactive controls. Each one calls a real API route and shows its actual result or error.
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState, type FormEvent, type ReactNode } from "react";
-import { BookOpen, Check, FlaskConical, Home, Loader2, Play, Receipt, Settings, Shield, Sparkles, Trash2, X } from "lucide-react";
+import { Check, FlaskConical, Loader2, Play, Shield, Sparkles, Trash2, X } from "lucide-react";
 import { buttonClass, cx } from "./ui";
 
 async function api<T = unknown>(url: string, body: unknown, method = "POST"): Promise<T> {
@@ -37,104 +36,6 @@ function ErrorText({ error }: { error: string | null }) {
 
 function Spinner() {
   return <Loader2 size={15} className="animate-spin" aria-hidden />;
-}
-
-const NAV = [
-  { href: "/", label: "Overview", icon: Home },
-  { href: "/run", label: "Run a task", icon: Play },
-  { href: "/skills", label: "Skills", icon: BookOpen },
-  { href: "/security", label: "Security lab", icon: Shield },
-  { href: "/receipts", label: "Receipts", icon: Receipt },
-  { href: "/settings", label: "Memory & settings", icon: Settings },
-];
-
-export function NavLinks() {
-  const path = usePathname();
-  return (
-    <nav aria-label="Main" className="flex flex-wrap gap-1 lg:flex-col">
-      {NAV.map(({ href, label, icon: Icon }) => {
-        const active = href === "/" ? path === "/" : path.startsWith(href) || (href === "/run" && path.startsWith("/tasks"));
-        return (
-          <Link key={href} href={href} aria-current={active ? "page" : undefined}
-            className={cx("inline-flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13.5px] font-medium transition-colors",
-              active ? "bg-card text-ink shadow-[0_0_0_1px_var(--color-line)]" : "text-muted hover:bg-sunk hover:text-ink")}>
-            <Icon size={16} aria-hidden />
-            {label}
-          </Link>
-        );
-      })}
-    </nav>
-  );
-}
-
-export type InboxPreview = { day: number; items: { id: string; fromName: string; subject: string }[] };
-
-export function TaskComposer({ examples, inboxes, defaultPrompt, defaultDay }: { examples: string[]; inboxes: InboxPreview[]; defaultPrompt?: string; defaultDay?: number }) {
-  const router = useRouter();
-  const [prompt, setPrompt] = useState(defaultPrompt ?? examples[0] ?? "");
-  const [day, setDay] = useState(defaultDay ?? 1);
-  const [route, setRoute] = useState<"auto" | "apprentice">("auto");
-  const { busy, error, run } = useAction();
-  const inbox = inboxes.find((i) => i.day === day);
-
-  async function submit(e: FormEvent) {
-    e.preventDefault();
-    const r = await run(() => api<{ taskId: string }>("/api/tasks", { prompt, day, route }));
-    if (r) router.push(`/tasks/${r.taskId}`);
-  }
-
-  return (
-    <form onSubmit={submit} className="grid gap-6 lg:grid-cols-[1fr_320px]">
-      <div className="min-w-0">
-        <label htmlFor="prompt" className="text-[13px] font-medium text-ink">What should Noctua do?</label>
-        <textarea id="prompt" value={prompt} onChange={(e) => setPrompt(e.target.value)} rows={4} maxLength={1000} required
-          className="mt-2 w-full resize-y rounded-xl border border-line-strong bg-card px-4 py-3 text-[15px] leading-relaxed text-ink placeholder:text-muted focus:border-accent focus:outline-none" />
-        <div className="mt-3 flex flex-wrap gap-2" aria-label="Example prompts">
-          {examples.map((ex) => (
-            <button type="button" key={ex} onClick={() => setPrompt(ex)}
-              className="rounded-full border border-line bg-card px-3 py-1 text-left text-[12.5px] text-ink-2 hover:border-line-strong hover:bg-sunk">
-              {ex.length > 72 ? `${ex.slice(0, 70)}…` : ex}
-            </button>
-          ))}
-        </div>
-        <fieldset className="mt-6">
-          <legend className="text-[13px] font-medium text-ink">Routing</legend>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {([["auto", "Use a verified skill if one matches"], ["apprentice", "Force full reasoning (Apprentice)"]] as const).map(([v, label]) => (
-              <label key={v} className={cx("flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-[13px]", route === v ? "border-ink bg-card" : "border-line bg-card/60 text-muted")}>
-                <input type="radio" name="route" value={v} checked={route === v} onChange={() => setRoute(v)} className="accent-[var(--color-ink)]" />
-                {label}
-              </label>
-            ))}
-          </div>
-        </fieldset>
-        <div className="mt-6 flex items-center gap-3">
-          <button type="submit" disabled={busy || prompt.trim().length < 3} className={buttonClass("primary")}>
-            {busy ? <Spinner /> : <Play size={15} aria-hidden />} {busy ? "Running…" : "Run task"}
-          </button>
-          {busy && <span className="text-[13px] text-muted" aria-live="polite">Planning, checking policy and executing…</span>}
-        </div>
-        <ErrorText error={error} />
-      </div>
-      <aside className="min-w-0 rounded-xl border border-line bg-sunk/60 p-4">
-        <div className="flex items-center justify-between gap-2">
-          <label htmlFor="day" className="text-[13px] font-medium text-ink">Sample inbox</label>
-          <select id="day" value={day} onChange={(e) => setDay(Number(e.target.value))} className="rounded-md border border-line-strong bg-card px-2 py-1 text-[13px]">
-            {inboxes.map((i) => <option key={i.day} value={i.day}>Day {i.day} · {i.items.length} messages</option>)}
-          </select>
-        </div>
-        <p className="mt-1 text-[12px] text-muted">Synthetic messages — no real mailbox is connected.</p>
-        <ul className="mt-3 divide-y divide-line">
-          {inbox?.items.map((m) => (
-            <li key={m.id} className="py-2">
-              <p className="truncate text-[12.5px] font-medium text-ink">{m.fromName}</p>
-              <p className="truncate text-[12.5px] text-muted">{m.subject}</p>
-            </li>
-          ))}
-        </ul>
-      </aside>
-    </form>
-  );
 }
 
 export function RunAgain({ prompt, day, label = "Run again" }: { prompt: string; day: number; label?: string }) {

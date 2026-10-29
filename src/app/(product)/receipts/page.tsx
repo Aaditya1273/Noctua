@@ -52,7 +52,7 @@ export default function ReceiptsPage() {
 
       <Card>
         <CardHeader title="History" meta={`${tasks.length} task${tasks.length === 1 ? "" : "s"}`} />
-        {tasks.length === 0 ? <Empty title="No receipts yet." action={<ButtonLink href="/run">Run a task</ButtonLink>} /> : (
+        {tasks.length === 0 ? <Empty title="No receipts yet." action={<ButtonLink href="/app">Run a task</ButtonLink>} /> : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[760px] text-left text-[13px]">
               <thead className="text-[12px] uppercase tracking-wide text-muted"><tr className="border-b border-line">{["When", "Task", "Path", "Status", "Mode", "Calls", "Tokens", "Cost", "Latency"].map((h) => <th key={h} className="px-5 py-2 font-medium">{h}</th>)}</tr></thead>

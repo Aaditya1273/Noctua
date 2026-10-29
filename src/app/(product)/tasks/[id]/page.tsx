@@ -77,7 +77,7 @@ export default async function TaskPage({ params }: PageProps<"/tasks/[id]">) {
         </Card>
 
         {pending.length > 0 && (
-          <Card className="border-[#ecd6ad]">
+          <Card className="border-warn/30">
             <CardHeader title="Waiting for your approval" meta="The policy engine allowed these to be proposed but not executed. Approving re-checks recipient, risk budget and exact arguments." />
             <ul className="divide-y divide-line">
               {pending.map((a) => (
