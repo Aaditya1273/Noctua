@@ -1,0 +1,32 @@
+# Render Blueprint: one free web service runs the whole app (UI + API).
+# Free-plan disks are ephemeral: the SQLite database and signing key reset on restart, sleep or redeploy.
+services:
+  - type: web
+    name: noctua
+    runtime: node
+    plan: free
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: NEBIUS_API_KEY
+        sync: false # set the secret in the Render dashboard; never commit it
+      - key: NEBIUS_BASE_URL
+        value: https://api.tokenfactory.nebius.com/v1
+      - key: NEBIUS_MODEL
+        value: nvidia/nemotron-3-super-120b-a12b
+      - key: NEBIUS_PRICING
+        value: '{"nvidia/nemotron-3-super-120b-a12b":{"input":0.30,"output":0.90}}'
+      # Public URL: keep spend tiny. ~$0.001 per full-reasoning run, so $0.03/day ≈ 25+ runs/day.
+      - key: DAILY_BUDGET_USD
+        value: "0.03"
+      - key: DAILY_MODEL_CALL_LIMIT
+        value: "60"
+      - key: DAILY_TOKEN_LIMIT
+        value: "100000"
+      - key: NEBIUS_MAX_RETRIES
+        value: "1"
+      - key: NEBIUS_MAX_OUTPUT_TOKENS
+        value: "1500"

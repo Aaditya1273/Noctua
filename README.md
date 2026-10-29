@@ -108,7 +108,20 @@ Open **Memory & settings → Check connection**. This calls `GET /models` and sh
 NEBIUS_API_KEY=... npm run smoke:live
 ```
 
-The default model is `nvidia/Nemotron-3_5-Lightning`. `NEBIUS_MODEL_FAST` and `NEBIUS_MODEL_REASONING` can assign different models to triage/drafting and planning/synthesis (for example `nvidia/nemotron-3-super-120b-a12b` for reasoning). If only one model is configured, the UI says so, and every receipt lists the model actually called. Costs are computed only for models listed in `NEBIUS_PRICING`, using API-reported tokens. For any other model, cost shows as **Unknown** and the monetary cap shows as **inactive**; the call and token limits still apply.
+The default model is `nvidia/nemotron-3-super-120b-a12b`, verified live. `nvidia/Nemotron-3_5-Lightning` was listed in the tested catalogue but returned no response within 120 s, so it is not the default. Nemotron 3 models reason by default and can spend the whole output budget on hidden thinking tokens, so Noctua sends `chat_template_kwargs.enable_thinking=false` unless `NEBIUS_DISABLE_THINKING=false` is set. `NEBIUS_MODEL_FAST` and `NEBIUS_MODEL_REASONING` can assign different models to triage/drafting and planning/synthesis (for example `nvidia/nemotron-3-super-120b-a12b` for reasoning). If only one model is configured, the UI says so, and every receipt lists the model actually called. Costs are computed only for models listed in `NEBIUS_PRICING`, using API-reported tokens. For any other model, cost shows as **Unknown** and the monetary cap shows as **inactive**; the call and token limits still apply.
+
+### Deploy to Render (free web service)
+
+`render.yaml` is a Render Blueprint for a single free web service (the UI and API are one Next.js server).
+
+1. In Render, choose **New → Blueprint** and connect this GitHub repository.
+2. When prompted, set the secret `NEBIUS_API_KEY`. Every other setting comes from `render.yaml`.
+3. Deploy. The service gets a `https://<name>.onrender.com` URL.
+
+Free-plan caveats: the disk is ephemeral, so the database (tasks, skills, receipts) and signing key reset whenever
+the service restarts, sleeps after about 15 idle minutes, or redeploys. The app starts empty and is designed for that.
+The first request after a sleep can take up to a minute. Daily caps in `render.yaml` ($0.03, 60 calls) keep a public
+URL from draining credits.
 
 ### Docker
 
@@ -152,8 +165,8 @@ Measured results and methodology are in [EVALUATION.md](EVALUATION.md).
 | Policy engine, approvals, risk budget, tool registry | Real, enforced server-side, tested |
 | Skill synthesis, evaluation, promotion, demotion, signing | Real, tested |
 | Budget and receipts | Real. Cost is computed only from reported usage × configured prices |
-| Nebius Token Factory client | Implemented, and tested against a protocol mock. **Not verified against the live API in this workspace (no key was available).** |
-| Model IDs and prices in `.env.example` | Taken from a third-party listing (mastra.ai). Confirm in your console |
+| Nebius Token Factory client | **Verified live on 2026-10-29** with `nvidia/nemotron-3-super-120b-a12b` (smoke test, full graduation loop, live benchmark, live Attack Night), plus protocol-mock tests |
+| Model IDs in `.env.example` | Confirmed against a live `/models` catalogue. Prices are from a third-party listing (mastra.ai); confirm them in your console |
 | Inbox, web page, contacts | **Synthetic sample data** (`.example` domains). No Gmail, Telegram or web-search integration exists |
 | `mail.send` / `mail.forward` | Write to a local outbox only. `data.delete` and `payment.transfer` are always denied |
 | Nebius Serverless, NemoClaw, OpenShell, Tavily | **Not used.** The policy engine is Noctua's own |
@@ -170,7 +183,7 @@ See [SECURITY.md](SECURITY.md) for the trust model.
 
 ## NVIDIA and Nebius technology used
 
-- **NVIDIA Nemotron** open models (default `nvidia/Nemotron-3_5-Lightning`, configurable per role), called for planning, triage, reply drafting and skill-rule synthesis.
+- **NVIDIA Nemotron 3 Super** (`nvidia/nemotron-3-super-120b-a12b`, configurable per role), called for planning, triage, reply drafting and skill-rule synthesis.
 - **Nebius Token Factory** OpenAI-compatible Chat Completions and `GET /models`, called server-side only, with JSON-mode responses, API-reported usage and the key read from the environment.
 
 ## License
