@@ -43,3 +43,6 @@ next-env.d.ts
 # noctua local state (database, signing key)
 /data/
 !.env.example
+
+# browser test artefacts
+/.playwright-mcp/

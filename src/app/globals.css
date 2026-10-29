@@ -1,32 +1,34 @@
 @import "tailwindcss";
 
+/* Noctua — night theme. Near-black canvas, monochrome ink, one luminous mint accent (verified / safe). */
 @theme {
-  --color-paper: #f8f5ee;
-  --color-card: #fffdf8;
-  --color-sunk: #f1ede3;
-  --color-ink: #1d1b18;
-  --color-ink-2: #3b3833;
-  --color-muted: #6c665c;
-  --color-line: #e5dece;
-  --color-line-strong: #d3cab6;
-  --color-accent: #2d6a4c;
-  --color-accent-ink: #1f4c36;
-  --color-accent-soft: #e4efe7;
-  --color-warn: #8a5410;
-  --color-warn-soft: #f8ecd6;
-  --color-danger: #9c3424;
-  --color-danger-soft: #f6e1dc;
-  --color-info: #3c5a7a;
-  --color-info-soft: #e5ecf3;
+  --color-paper: #050506;
+  --color-card: #0d0d10;
+  --color-sunk: #16161a;
+  --color-ink: #f5f5f6;
+  --color-ink-2: #c9c9cf;
+  --color-muted: #8a8a94;
+  --color-line: #222228;
+  --color-line-strong: #34343c;
+  --color-accent: #6ee7b7;
+  --color-accent-ink: #a7f3d0;
+  --color-accent-soft: rgb(110 231 183 / 0.1);
+  --color-warn: #fbbf24;
+  --color-warn-soft: rgb(251 191 36 / 0.1);
+  --color-danger: #f87171;
+  --color-danger-soft: rgb(248 113 113 / 0.1);
+  --color-info: #93c5fd;
+  --color-info-soft: rgb(147 197 253 / 0.1);
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-  --font-serif: var(--font-newsreader), ui-serif, Georgia, serif;
-  --radius-card: 14px;
+  --font-serif: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --radius-card: 18px;
 }
 
 html {
   background: var(--color-paper);
   color: var(--color-ink);
+  color-scheme: dark;
 }
 
 body {
@@ -34,19 +36,66 @@ body {
   font-feature-settings: "ss01", "cv11";
 }
 
-::selection {
-  background: var(--color-accent-soft);
-}
+h1.font-serif, h2.font-serif, .font-serif { letter-spacing: -0.035em; font-weight: 600; }
 
-:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
-  border-radius: 6px;
+::selection { background: rgb(110 231 183 / 0.25); }
+
+:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; border-radius: 8px; }
+
+* { scrollbar-width: thin; scrollbar-color: #2a2a31 transparent; }
+
+/* ---------- Ambient night sky (landing + console backdrop) ---------- */
+.sky { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.sky::before, .sky::after {
+  content: ""; position: absolute; width: 70vmax; height: 70vmax; border-radius: 50%; filter: blur(90px); opacity: 0.32;
 }
+.sky::before { background: radial-gradient(circle, #1e7a5c 0%, transparent 60%); left: -20vmax; top: -30vmax; animation: drift-a 26s ease-in-out infinite alternate; }
+.sky::after { background: radial-gradient(circle, #3b3f9e 0%, transparent 62%); right: -25vmax; bottom: -35vmax; animation: drift-b 32s ease-in-out infinite alternate; }
+.stars {
+  position: absolute; inset: 0; opacity: 0.55;
+  background-image:
+    radial-gradient(1px 1px at 12% 18%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 72% 12%, #fff 50%, transparent 51%),
+    radial-gradient(1.4px 1.4px at 38% 66%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 88% 58%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 54% 32%, #fff 50%, transparent 51%),
+    radial-gradient(1.2px 1.2px at 22% 84%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 64% 88%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 92% 28%, #fff 50%, transparent 51%);
+  animation: twinkle 7s ease-in-out infinite alternate;
+}
+@keyframes drift-a { to { transform: translate(18vmax, 14vmax) scale(1.15); } }
+@keyframes drift-b { to { transform: translate(-16vmax, -10vmax) scale(1.1); } }
+@keyframes twinkle { from { opacity: 0.25; } to { opacity: 0.65; } }
+
+/* ---------- Glass ---------- */
+.glass { background: rgb(18 18 22 / 0.62); backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%); border: 1px solid rgb(255 255 255 / 0.08); }
+
+/* ---------- Text ---------- */
+.text-glow { background: linear-gradient(180deg, #ffffff 0%, #b9b9c3 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.text-aurora { background: linear-gradient(90deg, #a7f3d0, #93c5fd 50%, #c4b5fd); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+/* ---------- Motion ---------- */
+.rise { animation: rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); filter: blur(6px); } }
+.shimmer { background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.08), transparent); background-size: 200% 100%; animation: shimmer 1.6s linear infinite; }
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+.pulse-ring { animation: pulse-ring 2.4s ease-out infinite; }
+@keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgb(110 231 183 / 0.45); } 100% { box-shadow: 0 0 0 14px rgb(110 231 183 / 0); } }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-  }
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
+
+/* ---------- Owl mascot ---------- */
+.owl-lid { transform: scaleY(0); animation: blink 5.5s infinite; }
+@keyframes blink { 0%, 93%, 100% { transform: scaleY(0); } 95.5% { transform: scaleY(1); } }
+.owl-thinking .owl-lid { animation-duration: 2.2s; }
+.owl-scan { animation: scan 1.6s ease-in-out infinite; }
+@keyframes scan { 0% { transform: translate(-5px, -2px); } 50% { transform: translate(5px, -3px); } 100% { transform: translate(-5px, -2px); } }
+.owl-aura { opacity: 0.35; transform-origin: center; animation: aura 3.2s ease-in-out infinite; }
+.owl-thinking .owl-aura, .owl-happy .owl-aura { opacity: 0.75; }
+.owl-alert .owl-aura { opacity: 0.9; animation-duration: 0.9s; }
+@keyframes aura { 50% { transform: scale(1.06); } }
+.owl-float { animation: float 6s ease-in-out infinite; }
+@keyframes float { 50% { transform: translateY(-8px); } }

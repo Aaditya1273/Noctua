@@ -34,7 +34,7 @@ export function PageHeader({ title, lead, actions }: { title: string; lead?: Rea
 }
 
 export function Card({ children, className, as: Tag = "section" }: { children: ReactNode; className?: string; as?: "section" | "div" | "article" }) {
-  return <Tag className={cx("rounded-card border border-line bg-card", className)}>{children}</Tag>;
+  return <Tag className={cx("glass rounded-card", className)}>{children}</Tag>;
 }
 
 export function CardHeader({ title, meta, action }: { title: ReactNode; meta?: ReactNode; action?: ReactNode }) {
@@ -52,10 +52,10 @@ export function CardHeader({ title, meta, action }: { title: ReactNode; meta?: R
 export type Tone = "neutral" | "accent" | "warn" | "danger" | "info";
 const TONES: Record<Tone, string> = {
   neutral: "bg-sunk text-ink-2 border-line",
-  accent: "bg-accent-soft text-accent-ink border-[#c9ddd0]",
-  warn: "bg-warn-soft text-warn border-[#ecd6ad]",
-  danger: "bg-danger-soft text-danger border-[#ebc4bb]",
-  info: "bg-info-soft text-info border-[#c8d6e4]",
+  accent: "bg-accent-soft text-accent-ink border-accent/25",
+  warn: "bg-warn-soft text-warn border-warn/25",
+  danger: "bg-danger-soft text-danger border-danger/25",
+  info: "bg-info-soft text-info border-info/25",
 };
 
 export function Badge({ tone = "neutral", children, title }: { tone?: Tone; children: ReactNode; title?: string }) {
@@ -151,11 +151,11 @@ export function ButtonLink({ href, children, variant = "primary" }: { href: stri
 }
 
 export function buttonClass(variant: "primary" | "secondary" | "danger" | "ghost" = "primary") {
-  const base = "inline-flex h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 text-[13.5px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50";
+  const base = "inline-flex h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 text-[13.5px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50";
   return cx(base, {
-    primary: "bg-ink text-paper hover:bg-ink-2",
+    primary: "bg-ink text-paper hover:bg-white shadow-[0_0_0_1px_rgb(255_255_255/0.1),0_8px_30px_-8px_rgb(110_231_183/0.35)]",
     secondary: "border border-line-strong bg-card text-ink hover:bg-sunk",
-    danger: "border border-[#ebc4bb] bg-danger-soft text-danger hover:bg-[#f1d3cc]",
+    danger: "border border-danger/30 bg-danger-soft text-danger hover:bg-danger/20",
     ghost: "text-ink-2 hover:bg-sunk",
   }[variant]);
 }
