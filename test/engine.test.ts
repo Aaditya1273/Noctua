@@ -238,3 +238,13 @@ test("private data is blocked even when the user asks and the recipient is trust
   const d = decide(TOOLS["mail.send"], "mail.send", { to: "priya@northwind.example", subject: "Visit", body: "My address is 14 Larkspur Lane, Springfield." }, { kind: "user", taint: [] }, { taskId: "t" });
   assert.equal(d.rule, "P13-private-data");
 });
+
+test("floor rule: a reply that declines a low offer is not blocked; one that accepts it is", () => {
+  freshDemo();
+  const decline = decide(TOOLS["marketplace.reply"], "marketplace.reply", { to: "jordan.k", text: "It's listed at $120 with a minimum of $90, so $10 is too low. Pickup is at the library." }, { kind: "model", taint: ["marketplace:buyer-thread"] }, { taskId: "t" });
+  assert.equal(decline.decision, "require_approval");
+  const accept = decide(TOOLS["marketplace.reply"], "marketplace.reply", { to: "jordan.k", text: "No problem, $10 works!" }, { kind: "model", taint: [] }, { taskId: "t" });
+  assert.equal(accept.rule, "P14-below-floor");
+  const structured = decide(TOOLS["marketplace.reply"], "marketplace.reply", { to: "jordan.k", text: "See you soon.", acceptPriceUsd: 10 }, { kind: "model", taint: [] }, { taskId: "t" });
+  assert.equal(structured.rule, "P14-below-floor");
+});

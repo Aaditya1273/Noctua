@@ -86,7 +86,7 @@ function plannerPrompt(): string {
   const SKILL_ONLY = new Set(["triage.rules", "summarize.extractive", "draft.template"]);
   const tools = toolCatalog().filter((t) => !SKILL_ONLY.has(t.name)).map((t) => `- ${t.name} [${t.risk}${t.riskCost ? `, ${t.riskCost} risk pts` : ""}]: ${t.description}`).join("\n");
   return `You are Noctua's planner. Build a plan using ONLY these tools:\n${tools}\n
-Rules: tools act on a shared context (inbox.list loads messages; triage tools label them; digest.compose writes the digest; marketplace.read loads the listing and buyer thread, marketplace.draft drafts the reply and proposes sending it). Use {} as args unless the tool needs arguments: mail.send needs {"to","subject","body"}; mail.forward needs {"to","query"} where query is a short search phrase for the messages to forward (e.g. "invoice").
+Rules: tools act on a shared context (inbox.list loads messages; triage tools label them; digest.compose writes the digest; marketplace.read loads the listing and buyer thread, marketplace.draft drafts the reply and proposes sending it). For a Marketplace request use exactly marketplace.read then marketplace.draft, and nothing else. Use {} as args unless the tool needs arguments: mail.send needs {"to","subject","body"}; mail.forward needs {"to","query"} where query is a short search phrase for the messages to forward (e.g. "invoice").
 If the request cannot be done with these tools, return supported=false and no steps.
 Return only JSON: {"goal": string, "supported": boolean, "steps": [{"tool": string, "args": object, "why": string}]}`;
 }
@@ -130,7 +130,13 @@ async function runApprentice(s: ExecState, prompt: string): Promise<{ plan: Plan
   }
   if (!plan.supported || plan.steps.length === 0) return { plan, status: "unsupported", error: "Noctua's sample workspace has no tools for this request." };
 
+  const loadsInbox = plan.steps.some((x) => x.tool === "inbox.list");
+  const INBOX_STEPS = new Set(["guard.injection_scan", "triage.llm", "triage.rules", "summarize.extractive", "draft.template", "draft.llm", "digest.compose"]);
   for (const raw of enforceGuard(plan.steps, s)) {
+    if (!loadsInbox && INBOX_STEPS.has(raw.tool)) {
+      note(s, "info", "planner", `Skipped ${raw.tool}: this plan never loads an inbox.`);
+      continue;
+    }
     const step = TOOLS[raw.tool]?.risk === "irreversible" ? { ...raw, args: resolveRecipient(raw.args, s) } : raw;
     const r = await invokeTool(s, step.tool, step.args, { kind: "planner", taint: [] });
     if (r.decision.decision !== "allow" && TOOLS[step.tool]?.risk === "irreversible") {
