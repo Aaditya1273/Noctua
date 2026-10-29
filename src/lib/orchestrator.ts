@@ -26,6 +26,8 @@ export type TaskResult = {
   standInCalls: number;
   planGoal: string | null;
   matched?: { skillId: string; version: number; overlap: number; shared: number };
+  market?: ExecState["market"];
+  budgetFallback?: boolean;
 };
 
 const PlanSchema = z.object({
@@ -49,6 +51,8 @@ const DEMO_PLAN: Plan = {
 /** Demo-mode stand-in for the model planner: transparent keyword rules, labelled on every receipt. */
 export function demoPlan(prompt: string, day: number): Plan {
   const p = prompt.toLowerCase();
+  if (/\b(marketplace|listing|buyer)\b/.test(p))
+    return { goal: "Reply to the Marketplace buyer.", supported: true, steps: [{ tool: "marketplace.read", args: {}, why: "Load the listing and buyer messages." }, { tool: "marketplace.draft", args: {}, why: "Draft a reply." }] };
   if (!/\b(inbox|e-?mails?|mail|messages?|triage|replies)\b/.test(p))
     return { goal: "Request is outside the sample workspace's tools.", supported: false, steps: [] };
   const steps = [...DEMO_PLAN.steps];
@@ -82,7 +86,7 @@ function plannerPrompt(): string {
   const SKILL_ONLY = new Set(["triage.rules", "summarize.extractive", "draft.template"]);
   const tools = toolCatalog().filter((t) => !SKILL_ONLY.has(t.name)).map((t) => `- ${t.name} [${t.risk}${t.riskCost ? `, ${t.riskCost} risk pts` : ""}]: ${t.description}`).join("\n");
   return `You are Noctua's planner. Build a plan using ONLY these tools:\n${tools}\n
-Rules: tools act on a shared context (inbox.list loads messages; triage tools label them; digest.compose writes the digest). Use {} as args unless the tool needs arguments: mail.send needs {"to","subject","body"}; mail.forward needs {"to","query"} where query is a short search phrase for the messages to forward (e.g. "invoice").
+Rules: tools act on a shared context (inbox.list loads messages; triage tools label them; digest.compose writes the digest; marketplace.read loads the listing and buyer thread, marketplace.draft drafts the reply and proposes sending it). Use {} as args unless the tool needs arguments: mail.send needs {"to","subject","body"}; mail.forward needs {"to","query"} where query is a short search phrase for the messages to forward (e.g. "invoice").
 If the request cannot be done with these tools, return supported=false and no steps.
 Return only JSON: {"goal": string, "supported": boolean, "steps": [{"tool": string, "args": object, "why": string}]}`;
 }
@@ -168,6 +172,15 @@ export async function runTask(input: z.infer<typeof TaskInput>): Promise<RunOutc
   let coverage: number | null = null;
   let matched: TaskResult["matched"];
   let apprenticeFrom = 0; // trace index where the Apprentice path began (after any failed skill run)
+  let budgetFallback = false;
+  /** Daily cap reached: finish the task with labelled demo stand-ins instead of failing. Never claims inference. */
+  const toDemo = (why: string) => {
+    s.live = false;
+    budgetFallback = true;
+    const msg = `${why}. This run continued in demo mode: model steps use labelled stand-ins, no inference performed.`;
+    fallback = fallback ? `${fallback} ${msg}` : msg;
+    note(s, "fallback", "budget", msg);
+  };
 
   try {
     const m = input.route === "auto" ? findSkillFor(input.prompt) : null;
@@ -177,12 +190,20 @@ export async function runTask(input: z.infer<typeof TaskInput>): Promise<RunOutc
       if (!verifySkillSignature(m.skill, s)) {
         setSkillState(m.skill.id, "suspended", "Signature verification failed at run time; the stored artifact changed after evaluation.");
         fallback = "Matched skill failed signature verification and was suspended.";
-      } else if (m.skill.tier === "journeyman" && live && budgetStatus().state === "exhausted") {
-        fallback = "Journeyman skill needs a model call but the daily budget is exhausted.";
       } else {
+        if (m.skill.tier === "journeyman" && live && budgetStatus().state === "exhausted") toDemo("Today's model budget is used up");
         skill = m.skill;
         tier = m.skill.tier;
-        const r = await executeSkill(m.skill, s);
+        let r;
+        try {
+          r = await executeSkill(m.skill, s);
+        } catch (e) {
+          if (!(e instanceof BudgetError)) throw e;
+          // The budget, not the skill, failed: never demote for it. Re-run the skill without inference.
+          toDemo(e.message.replace(/\.$/, ""));
+          Object.assign(s, { emails: null, items: null, digest: null, flags: new Map() });
+          r = await executeSkill(m.skill, s);
+        }
         coverage = r.coverage;
         if (!r.ok) {
           setSkillState(m.skill.id, "demoted", `Demoted after task ${taskId}: ${r.invariantFailures.join(" ")}`);
@@ -197,24 +218,25 @@ export async function runTask(input: z.infer<typeof TaskInput>): Promise<RunOutc
     }
 
     if (!skill) {
-      const budget = budgetStatus();
-      if (live && budget.state === "exhausted") {
-        status = "deferred";
-        error = "Daily model budget reached. The task was deferred; re-run it tomorrow or raise the limit in Settings.";
-        note(s, "info", "router", error);
-      } else {
-        if (fallback) note(s, "fallback", "router", "Falling back to the Apprentice path (full reasoning).");
+      if (live && budgetStatus().state === "exhausted") toDemo("Today's model budget is used up");
+      if (fallback) note(s, "fallback", "router", "Falling back to the Apprentice path (full reasoning).");
+      apprenticeFrom = s.trace.length;
+      try {
+        const r = await runApprentice(s, input.prompt);
+        plan = r.plan; status = r.status; error = r.error ?? null;
+      } catch (e) {
+        if (!(e instanceof BudgetError) || !s.live) throw e;
+        // A limit was hit mid-run: keep what was spent on the receipt, then finish without inference.
+        toDemo(e.message.replace(/\.$/, ""));
+        Object.assign(s, { emails: null, items: null, digest: null, flags: new Map(), market: undefined, actions: [] });
         apprenticeFrom = s.trace.length;
         const r = await runApprentice(s, input.prompt);
-        plan = r.plan;
-        status = r.status;
-        error = r.error ?? null;
+        plan = r.plan; status = r.status; error = r.error ?? null;
       }
     }
   } catch (e) {
-    status = e instanceof BudgetError ? "deferred" : "failed";
-    error = e instanceof BudgetError ? `${e.message} The task was deferred.`
-      : e instanceof ModelOutputError ? `${e.message}. Nothing was executed from the invalid output.`
+    status = "failed";
+    error = e instanceof ModelOutputError ? `${e.message}. Nothing was executed from the invalid output.`
       : e instanceof ProviderError ? `Model provider error (${e.kind}): ${e.message}`
       : (e as Error).message;
     note(s, "error", "task", error);
@@ -223,9 +245,9 @@ export async function runTask(input: z.infer<typeof TaskInput>): Promise<RunOutc
   }
 
   const toolsUsed = s.trace.slice(apprenticeFrom).filter((t) => t.kind === "tool" || t.kind === "model").map((t) => t.name);
-  const result: TaskResult = { items: s.items ?? [], digest: s.digest, actions: s.actions, coverage, standInCalls: s.standInCalls, planGoal: plan?.goal ?? null, matched };
+  const result: TaskResult = { items: s.items ?? [], digest: s.digest, actions: s.actions, coverage, standInCalls: s.standInCalls, planGoal: plan?.goal ?? null, matched, market: s.market, budgetFallback };
   saveTask(taskId, {
-    status, tier, skill_id: skill?.id ?? null,
+    status, tier, skill_id: skill?.id ?? null, mode: s.live ? "live" : "demo",
     intent_key: skill ? skill.family : familyOf(toolsUsed),
     plan_json: plan ? JSON.stringify(plan) : null,
     result_json: JSON.stringify(result),
