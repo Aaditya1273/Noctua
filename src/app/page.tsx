@@ -1,14 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, Brain, Code2, Fingerprint, Lock, Repeat, ScrollText, ShieldCheck, Zap } from "lucide-react";
-import { LandingPrompt } from "@/components/landing-prompt";
 import { Owl } from "@/components/owl";
 
-type Run = { tier: string; modelCalls: number; costUsd: number | null; latencyMs: number | null; urgentMissed: number };
+type Run = { tier: string; modelCalls: number; costUsd: number | null; latencyMs: number | null };
 type Results = {
   generatedAt: string; mode: string; models: { fast: string };
-  baseline: { runs: Run[]; totals: { modelCallsIncludingLearning: number; costUsd: number | null }; urgentMissed: number };
+  baseline: { runs: Run[]; totals: { modelCallsIncludingLearning: number; costUsd: number | null } };
   noctua: { runs: Run[]; totals: { modelCallsIncludingLearning: number; costUsd: number | null }; runsWithoutInference: number; urgentMissed: number };
   attackNight: { passed: number; total: number };
 };
@@ -17,139 +15,152 @@ function results(): Results | null {
   try { return JSON.parse(fs.readFileSync(path.join(process.cwd(), "eval", "results.json"), "utf8")) as Results; } catch { return null; }
 }
 
-const avg = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null);
+const I = ({ children }: { children: React.ReactNode }) => <em className="font-italic font-normal not-italic tracking-[-0.01em] [font-style:italic]">{children}</em>;
+
+const CARDS = [
+  { t: "apprentice", r: -7, y: 24, dark: true, items: ["Nemotron plans with allowlisted tools", "Triages, summarises, drafts replies", "Every step passes the policy engine", "Receipt: calls, tokens, cost"] },
+  { t: "skill", r: 4, y: 0, dark: false, items: ["The run becomes a typed manifest", "Data, not generated code", "Learned keyword rules, fixed guard", "Versioned, provenance kept"] },
+  { t: "verify", r: -3, y: 12, dark: true, items: ["Held-out golden set", "100% urgent and suspicious recall", "Attack containment, determinism", "Signed only if every check passes"] },
+  { t: "master", r: 6, y: 4, dark: false, items: ["Same request, zero model calls", "Milliseconds, $0 inference", "Demotes itself on drift", "Falls back to full reasoning"] },
+  { t: "attack night", r: -5, y: 20, dark: true, items: ["Poisoned email and web pages", "Approval replay, tampered skills", "Malformed and chained tool calls", "Enforced by code, not the model"] },
+];
+
+const WORDS = ["reason once", "verify", "reuse", "zero inference", "receipts", "attack night", "your rules"];
 
 export default function Landing() {
   const r = results();
   const live = r?.mode === "live";
-  const appr = r?.baseline.runs ?? [];
-  const master = (r?.noctua.runs ?? []).filter((x) => x.tier === "master");
-  const apprCost = avg(appr.map((x) => x.costUsd ?? 0));
-  const apprMs = avg(appr.map((x) => x.latencyMs ?? 0));
-  const masterMs = avg(master.map((x) => x.latencyMs ?? 0));
   const date = r ? new Date(r.generatedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
 
   return (
-    <div className="relative overflow-x-hidden">
-      <div className="sky" aria-hidden><div className="stars" /></div>
-
-      <header className="fixed inset-x-0 top-3 z-40 px-3">
-        <nav aria-label="Main" className="glass mx-auto flex max-w-5xl items-center gap-2 rounded-full py-1.5 pl-2 pr-1.5">
-          <Link href="/" className="flex items-center gap-2 rounded-full pr-3"><Owl size={30} track={false} /><span className="text-[15px] font-semibold tracking-tight">noctua</span></Link>
-          <div className="ml-auto hidden items-center gap-1 text-[13.5px] text-ink-2 sm:flex">
-            <a href="#how" className="rounded-full px-3 py-1.5 hover:bg-white/5 hover:text-ink">How it works</a>
-            <a href="#proof" className="rounded-full px-3 py-1.5 hover:bg-white/5 hover:text-ink">Proof</a>
-            <a href="#trust" className="rounded-full px-3 py-1.5 hover:bg-white/5 hover:text-ink">Security</a>
-            <a href="https://github.com/Aaditya1273/Noctua" className="rounded-full px-3 py-1.5 hover:bg-white/5 hover:text-ink">GitHub</a>
-          </div>
-          <Link href="/app" className="ml-auto inline-flex h-9 items-center gap-1.5 rounded-full bg-ink px-4 text-[13.5px] font-medium text-paper hover:bg-white sm:ml-1">Open console <ArrowRight size={14} aria-hidden /></Link>
+    <div className="overflow-x-hidden bg-black font-display text-ink">
+      <header className="fixed inset-x-0 top-0 z-40 flex items-center justify-between px-5 py-4 mix-blend-difference sm:px-8">
+        <Link href="/" className="flex items-center gap-2 text-[22px] font-black tracking-[-0.06em] text-white">noctua</Link>
+        <nav aria-label="Main" className="hidden items-center gap-7 text-[14px] font-medium lowercase text-white sm:flex">
+          <a href="#how" className="hover:opacity-60">how it works</a>
+          <a href="#proof" className="hover:opacity-60">proof</a>
+          <a href="https://github.com/Aaditya1273/Noctua" className="hover:opacity-60">source</a>
         </nav>
+        <Link href="/app" className="rounded-full border-[1.5px] border-white px-4 py-1.5 text-[12.5px] font-extrabold uppercase tracking-wide text-white hover:bg-white hover:text-black">open app</Link>
       </header>
 
-      <main className="relative z-10">
-        {/* Hero */}
-        <section className="flex min-h-dvh flex-col items-center justify-center px-4 pb-16 pt-28 text-center">
-          <div className="owl-float rise"><Owl size={170} /></div>
-          <p className="rise mt-6 inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1 text-[12.5px] text-ink-2" style={{ animationDelay: "80ms" }}>
-            <span className="size-1.5 rounded-full bg-accent pulse-ring" aria-hidden /> Personal AI · NVIDIA Nemotron on Nebius Token Factory
-          </p>
-          <h1 className="rise mt-5 max-w-4xl text-[clamp(2.6rem,7.5vw,6rem)] font-semibold leading-[0.95] tracking-[-0.055em] text-glow" style={{ animationDelay: "140ms" }}>
-            The AI that learns<br />to <span className="text-aurora">stop thinking.</span>
-          </h1>
-          <p className="rise mt-6 max-w-xl text-[16.5px] leading-relaxed text-ink-2" style={{ animationDelay: "220ms" }}>
-            Noctua reasons through a new task once, turns it into a workflow, verifies it against tests and attacks — and from then on runs it with <span className="text-ink">zero model calls</span>. You keep the receipts, the budget and the final say.
-          </p>
-          <div className="rise mt-9 flex w-full justify-center" style={{ animationDelay: "300ms" }}><LandingPrompt /></div>
-          <p className="rise mt-6 text-[12px] text-muted" style={{ animationDelay: "380ms" }}>Runs on a clearly labelled synthetic inbox. No account, no sign-up.</p>
+      <main>
+        {/* Hero: inset frame */}
+        <section className="p-3">
+          <div className="relative flex min-h-[calc(100dvh-24px)] flex-col justify-end overflow-hidden rounded-[24px] border border-[#1c1c1c] bg-[#0b0b0b] px-5 pb-12 pt-28 sm:px-10 sm:pb-16">
+            <div className="pointer-events-none absolute inset-0 opacity-[0.35] [background-image:radial-gradient(#2a2a2a_1px,transparent_1px)] [background-size:22px_22px]" aria-hidden />
+            <div className="owl-float absolute right-[8%] top-[16%] rotate-[8deg] sm:right-[14%]"><Owl size={150} /></div>
+            <p className="relative mb-6 max-w-sm text-[15px] font-medium leading-relaxed text-ink-2">
+              a personal ai agent on NVIDIA Nemotron and Nebius Token Factory that learns your repeated tasks, proves them, and stops paying to think about them.
+            </p>
+            <h1 className="relative text-[clamp(3.2rem,11vw,11rem)] font-black leading-[0.86] tracking-[-0.065em]">
+              reason <I>once.</I><br />
+              then{" "}
+              <span className="relative inline-block">
+                never
+                <svg className="draw-underline absolute -bottom-[0.08em] left-0 h-[0.22em] w-full" viewBox="0 0 300 30" preserveAspectRatio="none" aria-hidden>
+                  <path d="M4 20 C 70 4, 140 28, 210 12 S 290 14, 296 8" fill="none" stroke="#fafafa" strokeWidth="5" strokeLinecap="round" />
+                </svg>
+              </span>{" "}again.
+            </h1>
+            <div className="relative mt-10 flex flex-wrap items-center gap-3">
+              <Link href="/app" className="rounded-full bg-white px-6 py-3 text-[15px] font-bold lowercase text-black transition-transform hover:scale-[1.03]">open the app</Link>
+              <a href="#how" className="rounded-full border-[1.5px] border-[#3a3a3a] px-6 py-3 text-[15px] font-bold lowercase text-white hover:border-white">see how it works</a>
+              <span className="ml-1 text-[13px] text-muted">no sign-up · synthetic sample inbox</span>
+            </div>
+          </div>
         </section>
 
-        {/* Ladder */}
-        <section id="how" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-24">
-          <p className="text-center text-[12.5px] font-medium uppercase tracking-[0.2em] text-accent">The graduation ladder</p>
-          <h2 className="mx-auto mt-3 max-w-3xl text-center text-[clamp(2rem,4.6vw,3.6rem)] font-semibold leading-[1] tracking-[-0.045em] text-glow">Reason once. Verify. Reuse.</h2>
-          <div className="mt-14 grid gap-4 md:grid-cols-3">
-            {[
-              { icon: Brain, tier: "Apprentice", title: "Thinks it through", body: "Nemotron plans with allowlisted tools, triages, drafts replies. Every step passes the policy engine.", stat: live && apprCost !== null ? `~$${apprCost.toFixed(4)} · ${apprMs ? (apprMs / 1000).toFixed(1) : "?"}s` : "full reasoning", tone: "text-info" },
-              { icon: BadgeCheck, tier: "Verified", title: "Earns trust", body: "The run becomes a typed, allowlisted skill — data, not code. It must pass held-out labels, 100% urgent recall, attack containment and determinism, then it's signed.", stat: "10+ mandatory checks", tone: "text-warn" },
-              { icon: Zap, tier: "Master", title: "Stops paying", body: "Same request, no model call. If the inbox drifts or an urgent message would be missed, it demotes itself and re-runs with full reasoning.", stat: masterMs !== null ? `$0 · ${Math.max(1, Math.round(masterMs))} ms` : "$0 · 0 calls", tone: "text-accent" },
-            ].map((c, i) => (
-              <div key={c.tier} className="glass group relative overflow-hidden rounded-[26px] p-6 transition-transform duration-500 hover:-translate-y-1">
-                <div className="absolute -right-10 -top-10 size-40 rounded-full bg-white/[0.03] blur-2xl transition-opacity group-hover:opacity-100" aria-hidden />
-                <div className="flex items-center justify-between">
-                  <c.icon size={22} className={c.tone} aria-hidden />
-                  <span className="text-[12px] text-muted">0{i + 1}</span>
-                </div>
-                <p className={`mt-6 text-[12px] font-medium uppercase tracking-[0.16em] ${c.tone}`}>{c.tier}</p>
-                <h3 className="mt-1 text-[1.6rem] font-semibold tracking-[-0.03em]">{c.title}</h3>
-                <p className="mt-2 text-[14px] leading-relaxed text-ink-2">{c.body}</p>
-                <p className="mt-6 font-mono text-[13px] text-ink">{c.stat}</p>
-              </div>
+        {/* Marquee */}
+        <section aria-hidden className="overflow-hidden border-y border-[#161616] py-8">
+          <div className="marquee">
+            {[...WORDS, ...WORDS].map((w, i) => (
+              <span key={i} className="flex items-center whitespace-nowrap px-6 text-[clamp(3rem,8vw,7rem)] font-black lowercase leading-none tracking-[-0.05em]">
+                <span className={i % 2 ? "outline-text" : "text-white"}>{w}</span>
+                <span className="ml-12 inline-block size-3 rounded-full bg-[#3a3a3a]" />
+              </span>
+            ))}
+          </div>
+        </section>
+
+        {/* Statement */}
+        <section className="mx-auto max-w-6xl px-5 py-28 sm:px-8">
+          <h2 className="text-[clamp(2.4rem,6.5vw,6rem)] font-black lowercase leading-[0.92] tracking-[-0.055em]">
+            between <I>your inbox</I> and the model sits a policy engine that <span className="text-muted">can&apos;t be talked into anything.</span>
+          </h2>
+          <p className="mt-8 max-w-xl font-sans text-[17px] leading-relaxed text-ink-2">
+            Email, web pages and tool output are untrusted data. Every tool call is checked on the server against twelve ordered rules. Irreversible actions need your approval, bound to the exact arguments, and spend from a separate daily risk budget.
+          </p>
+        </section>
+
+        {/* Fan cards */}
+        <section id="how" className="scroll-mt-10 px-5 pb-32 pt-8 sm:px-8">
+          <h2 className="mx-auto max-w-6xl text-[clamp(2.4rem,6vw,5.5rem)] font-black lowercase leading-[0.92] tracking-[-0.055em]">
+            what happens on <I>every</I> task
+          </h2>
+          <div className="fan mx-auto mt-16 flex max-w-6xl flex-wrap justify-center gap-4 lg:flex-nowrap lg:gap-0">
+            {CARDS.map((c, i) => (
+              <article key={c.t} className={`fan-card relative w-full max-w-[300px] rounded-[14px] p-6 shadow-[0_14px_40px_-14px_rgb(0_0_0/0.9)] sm:w-[260px] lg:-mx-3 ${c.dark ? "border border-[#262626] bg-[#141414] text-white" : "bg-[#f2f2f2] text-black"}`}
+                style={{ transform: `rotate(${c.r}deg) translateY(${c.y}px)`, zIndex: i }}>
+                <p className={`text-[12px] font-bold uppercase tracking-[0.18em] ${c.dark ? "text-muted" : "text-[#6b6b6b]"}`}>0{i + 1}</p>
+                <h3 className="mt-10 text-[2.1rem] font-extrabold lowercase leading-none tracking-[-0.045em]">{c.t}</h3>
+                <svg viewBox="0 0 200 10" className="mt-4 h-2 w-24" aria-hidden><path d="M2 6 C 50 1, 100 9, 198 4" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" /></svg>
+                <ul className="mt-6 space-y-2.5 font-sans text-[14.5px] font-medium leading-snug">
+                  {c.items.map((x) => <li key={x}>{x}</li>)}
+                </ul>
+              </article>
             ))}
           </div>
         </section>
 
         {/* Proof */}
-        <section id="proof" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-24">
-          <div className="glass rounded-[32px] p-8 sm:p-12">
-            <p className="text-[12.5px] font-medium uppercase tracking-[0.2em] text-accent">{live ? `Measured live · Nebius Token Factory · ${date}` : "Benchmark"}</p>
-            <h2 className="mt-3 max-w-3xl text-[clamp(1.8rem,4vw,3rem)] font-semibold leading-[1.02] tracking-[-0.045em]">Same seven tasks. Same inputs. Learning and verification included in the bill.</h2>
-            {r ? (
-              <dl className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <section id="proof" className="scroll-mt-10 border-t border-[#161616] px-5 py-28 sm:px-8">
+          <div className="mx-auto max-w-6xl">
+            <p className="font-sans text-[13px] font-medium uppercase tracking-[0.2em] text-muted">{live ? `measured live on nebius token factory · ${date}` : "benchmark"}</p>
+            <h2 className="mt-4 max-w-4xl text-[clamp(2.2rem,5.5vw,5rem)] font-black lowercase leading-[0.92] tracking-[-0.055em]">same seven tasks. learning <I>included</I> in the bill.</h2>
+            {r && (
+              <dl className="mt-16 grid gap-x-10 gap-y-14 sm:grid-cols-2 lg:grid-cols-4">
                 {[
-                  { k: "Model calls", v: `${r.noctua.totals.modelCallsIncludingLearning} vs ${r.baseline.totals.modelCallsIncludingLearning}`, n: "Noctua vs. reasoning every time" },
-                  { k: "Runs with zero inference", v: `${r.noctua.runsWithoutInference}/${r.noctua.runs.length}`, n: "verified skills, no model call" },
-                  { k: "Urgent messages missed", v: String(r.noctua.urgentMissed), n: "runtime invariants demote unsafe skills" },
-                  { k: "Attacks blocked", v: `${r.attackNight.passed}/${r.attackNight.total}`, n: "Attack Night, enforced server-side" },
-                ].map((s) => (
-                  <div key={s.k}>
-                    <dd className="text-[clamp(2.4rem,5vw,3.6rem)] font-semibold leading-none tracking-[-0.05em] text-glow tabular-nums">{s.v}</dd>
-                    <dt className="mt-3 text-[14px] font-medium text-ink">{s.k}</dt>
-                    <p className="mt-1 text-[13px] text-muted">{s.n}</p>
+                  { v: `${r.noctua.totals.modelCallsIncludingLearning}`, s: `vs ${r.baseline.totals.modelCallsIncludingLearning}`, k: "model calls", n: "Noctua against reasoning every time" },
+                  { v: `${r.noctua.runsWithoutInference}`, s: `/ ${r.noctua.runs.length}`, k: "runs with zero inference", n: "verified skills, no model call" },
+                  { v: `${r.noctua.urgentMissed}`, s: "", k: "urgent messages missed", n: "unsafe skills demote themselves" },
+                  { v: `${r.attackNight.passed}`, s: `/ ${r.attackNight.total}`, k: "attacks blocked", n: "enforced on the server" },
+                ].map((x) => (
+                  <div key={x.k} className="border-t border-[#262626] pt-6">
+                    <dd className="text-[clamp(3.5rem,7vw,6rem)] font-black leading-none tracking-[-0.06em] tabular-nums">{x.v}<span className="ml-2 text-[0.38em] font-bold tracking-[-0.03em] text-muted">{x.s}</span></dd>
+                    <dt className="mt-4 text-[17px] font-bold lowercase">{x.k}</dt>
+                    <p className="mt-1 font-sans text-[14px] text-muted">{x.n}</p>
                   </div>
                 ))}
               </dl>
-            ) : <p className="mt-6 text-muted">Run <code>npm run eval</code> to generate results.</p>}
-            {r && <p className="mt-10 max-w-3xl text-[13px] leading-relaxed text-muted">
-              {live ? `Model: ${r.models.fast}. Measured spend $${r.noctua.totals.costUsd?.toFixed(4)} vs $${r.baseline.totals.costUsd?.toFixed(4)} over only seven runs — learning and two safety fallbacks are counted, so the gap widens with every repetition. ` : "Demo mode: no inference performed. "}
-              Synthetic sample inbox; this shows the mechanism, not real-world accuracy. Full method in <a className="underline hover:text-ink" href="https://github.com/Aaditya1273/Noctua/blob/main/EVALUATION.md">EVALUATION.md</a>.
+            )}
+            {r && <p className="mt-14 max-w-3xl font-sans text-[13.5px] leading-relaxed text-muted">
+              {live ? `Model ${r.models.fast}. Measured spend $${r.noctua.totals.costUsd?.toFixed(4)} against $${r.baseline.totals.costUsd?.toFixed(4)} over only seven runs, with learning and two safety fallbacks counted; each further repetition saves the full reasoning cost. ` : "Demo mode: no inference performed. "}
+              Synthetic sample inbox: this shows the mechanism, not real-world accuracy. Method in <a className="underline hover:text-ink" href="https://github.com/Aaditya1273/Noctua/blob/main/EVALUATION.md">EVALUATION.md</a>.
             </p>}
           </div>
         </section>
+      </main>
 
-        {/* Trust */}
-        <section id="trust" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-24">
-          <h2 className="max-w-3xl text-[clamp(2rem,4.6vw,3.6rem)] font-semibold leading-[1] tracking-[-0.045em] text-glow">The model is never the security mechanism.</h2>
-          <p className="mt-4 max-w-2xl text-[16px] text-ink-2">A poisoned email can talk a model into anything. It can&apos;t talk a policy engine into anything.</p>
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Footer: inset dark panel with giant wordmark */}
+      <footer className="p-2.5">
+        <div className="flex min-h-[80dvh] flex-col justify-between overflow-hidden rounded-[20px] bg-[#f2f2f2] px-6 pb-6 pt-14 text-black sm:px-10">
+          <div className="grid gap-10 sm:grid-cols-3">
             {[
-              { icon: ShieldCheck, t: "Every tool call checked", d: "One server-side gate, 12 ordered rules, every decision logged." },
-              { icon: Fingerprint, t: "Approvals bound to the action", d: "SHA-256 of the exact arguments. Change a word and it's void." },
-              { icon: Lock, t: "Two budgets", d: "Money and irreversibility. Either one stops the agent cold." },
-              { icon: ScrollText, t: "Receipts, not vibes", d: "API-reported tokens × real prices. Unknown stays Unknown." },
-            ].map((f) => (
-              <div key={f.t} className="glass rounded-[24px] p-5">
-                <f.icon size={20} className="text-accent" aria-hidden />
-                <h3 className="mt-4 text-[16px] font-semibold tracking-tight">{f.t}</h3>
-                <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink-2">{f.d}</p>
+              { b: "try it", l: <Link href="/app" className="hover:opacity-60">open the app</Link> },
+              { b: "built with", l: <span>nvidia nemotron · nebius token factory</span> },
+              { b: "source", l: <a href="https://github.com/Aaditya1273/Noctua" className="hover:opacity-60">github · apache-2.0</a> },
+            ].map((c) => (
+              <div key={c.b}>
+                <span className="rounded-full bg-black px-3 py-1 font-sans text-[12.5px] font-medium lowercase text-white">{c.b}</span>
+                <p className="mt-5 text-[clamp(1.4rem,2.4vw,2.2rem)] font-extrabold lowercase leading-tight tracking-[-0.04em]">{c.l}</p>
               </div>
             ))}
           </div>
-        </section>
-
-        {/* CTA */}
-        <section className="px-4 py-28 text-center">
-          <div className="owl-float mx-auto w-fit"><Owl size={96} mood="happy" /></div>
-          <h2 className="mx-auto mt-6 max-w-2xl text-[clamp(2rem,5vw,3.8rem)] font-semibold leading-[0.98] tracking-[-0.05em] text-glow">Watch it graduate in 60 seconds.</h2>
-          <Link href="/app" className="mt-8 inline-flex h-12 items-center gap-2 rounded-full bg-ink px-7 text-[15px] font-medium text-paper shadow-[0_0_60px_-10px_rgb(110_231_183/0.6)] transition-transform hover:scale-[1.03]">
-            <Repeat size={17} aria-hidden /> Open the console
-          </Link>
-        </section>
-      </main>
-
-      <footer className="relative z-10 border-t border-white/[0.06] px-4 py-8">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 text-[12.5px] text-muted">
-          <p>Noctua · Built with NVIDIA Nemotron and Nebius Token Factory · Apache-2.0</p>
-          <a href="https://github.com/Aaditya1273/Noctua" className="inline-flex items-center gap-1.5 hover:text-ink"><Code2 size={14} aria-hidden /> Source</a>
+          <div className="relative mt-16">
+            <div className="absolute -top-24 right-[6%] rotate-[-10deg] sm:-top-32"><Owl size={120} mood="happy" track={false} /></div>
+            <p className="select-none text-[clamp(5rem,24vw,24rem)] font-black leading-[0.78] tracking-[-0.075em]">noctua</p>
+          </div>
         </div>
       </footer>
     </div>
