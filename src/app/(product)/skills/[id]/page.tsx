@@ -25,7 +25,7 @@ export default async function SkillPage({ params }: PageProps<"/skills/[id]">) {
   const rules = (m.steps.find((s) => s.tool === "triage.rules")?.args as { rules?: { category: string; keywords: string[] }[] } | undefined)?.rules ?? [];
 
   return (
-    <div>
+    <div className="mx-auto w-full max-w-5xl px-5 pb-16 pt-16 sm:px-8 lg:pt-10">
       <PageHeader title={`${skill.name} · v${skill.version}`} lead={skill.description}
         actions={<>
           {(skill.state === "candidate") && <EvaluateButton skillId={skill.id} />}

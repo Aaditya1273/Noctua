@@ -1,7 +1,7 @@
 "use client";
 // Interactive controls. Each one calls a real API route and shows its actual result or error.
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Check, FlaskConical, Loader2, Play, Shield, Sparkles, Trash2, X } from "lucide-react";
 import { buttonClass, cx } from "./ui";
 

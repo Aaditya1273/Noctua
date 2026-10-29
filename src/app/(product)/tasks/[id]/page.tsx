@@ -35,7 +35,7 @@ export default async function TaskPage({ params }: PageProps<"/tasks/[id]">) {
   const tokens = r.promptTokens === null || r.completionTokens === null ? null : r.promptTokens + r.completionTokens;
 
   return (
-    <div>
+    <div className="mx-auto w-full max-w-5xl px-5 pb-16 pt-16 sm:px-8 lg:pt-10">
       <PageHeader
         title={t.tier === "master" ? "Completed without inference" : t.status === "done" ? "Task completed" : t.status === "deferred" ? "Task deferred" : t.status === "unsupported" ? "Not supported" : "Task failed"}
         lead={<span className="text-ink-2">&ldquo;{t.prompt}&rdquo;</span>}

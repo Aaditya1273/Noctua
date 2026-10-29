@@ -12,7 +12,7 @@ export default function SkillsPage() {
   const counts = SKILL_STATES.map((s) => [s, skills.filter((k) => k.state === s).length] as const).filter(([, n]) => n > 0);
   const families = [...new Set(skills.map((s) => s.family))];
   return (
-    <div>
+    <div className="mx-auto w-full max-w-5xl px-5 pb-16 pt-16 sm:px-8 lg:pt-10">
       <PageHeader title="Skills" lead="Workflows Noctua has learned from your repeated tasks. A skill is data — an allowlisted sequence of tools with typed arguments — and only runs after it passes every mandatory evaluation check." />
       {counts.length > 0 && <p className="mb-4 flex flex-wrap gap-3 text-[13px] text-muted">{counts.map(([s, n]) => <span key={s} className="flex items-center gap-1.5"><SkillStateBadge state={s} /> {n}</span>)}</p>}
       {skills.length === 0 ? (

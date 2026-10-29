@@ -25,7 +25,7 @@ export default function ReceiptsPage() {
     };
   });
   return (
-    <div>
+    <div className="mx-auto w-full max-w-5xl px-5 pb-16 pt-16 sm:px-8 lg:pt-10">
       <PageHeader title="Receipts" lead="Model spend is computed only from API-reported token usage and your configured prices. Missing values are shown as Unknown — never estimated into a number." />
       <Card className="mb-6"><CardHeader title="Today" meta={budget.monetaryCapNote} /><div className="px-5 py-5"><BudgetMeter budget={budget} /></div></Card>
 

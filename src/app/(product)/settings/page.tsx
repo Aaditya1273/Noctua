@@ -12,7 +12,7 @@ export default function SettingsPage() {
   const live = isLive(cfg);
   const models = [...new Set([cfg.models.fast, cfg.models.reasoning])];
   return (
-    <div>
+    <div className="mx-auto w-full max-w-5xl px-5 pb-16 pt-16 sm:px-8 lg:pt-10">
       <PageHeader title="Memory & settings" lead="Everything Noctua remembers is listed here and can be deleted. Budgets and limits are enforced on the server before every model call." />
       <div className="space-y-6">
         <Card>

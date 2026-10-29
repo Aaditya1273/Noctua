@@ -30,7 +30,7 @@ export default function SecurityPage() {
   const limits = getLimits();
   const irreversible = Object.values(TOOLS).filter((t) => t.risk === "irreversible");
   return (
-    <div>
+    <div className="mx-auto w-full max-w-5xl px-5 pb-16 pt-16 sm:px-8 lg:pt-10">
       <PageHeader title="Security lab" lead="Email, web pages and tool results are untrusted. Enforcement lives in a server-side policy engine that every tool call passes through — the model is never the security mechanism." actions={<AttackRunner live={isLive()} />} />
 
       <Card className="mb-6">
