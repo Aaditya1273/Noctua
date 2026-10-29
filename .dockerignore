@@ -4,4 +4,3 @@ data
 .env*
 !.env.example
 .git
-eval/results.json

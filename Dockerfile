@@ -12,6 +12,8 @@ ENV NODE_ENV=production PORT=3000 HOSTNAME=0.0.0.0 NOCTUA_DB_PATH=/data/noctua.d
 RUN mkdir -p /data && chown node:node /data
 COPY --from=build --chown=node:node /app/.next/standalone ./
 COPY --from=build --chown=node:node /app/.next/static ./.next/static
+# Measured benchmark results shown on the landing and receipts pages
+COPY --from=build --chown=node:node /app/eval ./eval
 USER node
 VOLUME ["/data"]
 EXPOSE 3000
