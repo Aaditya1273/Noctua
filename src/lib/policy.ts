@@ -3,7 +3,7 @@
 import crypto from "node:crypto";
 import { getLimits } from "./accounting.ts";
 import { db, id, nowIso, startOfDayIso, tx } from "./db.ts";
-import { SAMPLE_OWNER } from "./fixtures.ts";
+import { LISTING, OWNER_PRIVATE, SAMPLE_OWNER } from "./fixtures.ts";
 import { trustedContacts } from "./memory.ts";
 import type { ToolDef } from "./tools.ts";
 
@@ -32,8 +32,29 @@ export function riskRemaining(): number {
   return Math.max(0, getLimits().dailyRiskPoints - riskSpentToday());
 }
 
-function recipientsOf(args: Record<string, unknown>): string[] {
-  return typeof args.to === "string" ? [args.to.toLowerCase()] : [];
+function recipientsOf(tool: string, args: Record<string, unknown>): string[] {
+  // Trusted-contact rule applies to email; marketplace replies go back into the existing buyer thread.
+  return tool.startsWith("mail.") && typeof args.to === "string" ? [args.to.toLowerCase()] : [];
+}
+
+/** Outgoing free text of an action (what a recipient would actually read). */
+function outgoingText(args: Record<string, unknown>): string {
+  return [args.subject, args.body, args.text].filter((v) => typeof v === "string").join("\n");
+}
+
+const norm = (t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+const STREET = /\b\d{1,5}\s+(?:[a-z]+\s){0,3}(?:street|st|avenue|ave|road|rd|lane|ln|drive|dr|boulevard|blvd|court|ct|way|place|pl)\b/i;
+
+/** Private-data guard: the owner's home address (or any street address) never leaves in a message. */
+export function containsPrivateAddress(text: string): boolean {
+  return norm(text).includes(norm(OWNER_PRIVATE.homeAddress)) || STREET.test(text);
+}
+
+/** Dollar amounts below the seller's floor that the message would commit to. */
+export function belowFloor(args: Record<string, unknown>): number[] {
+  const amounts = [...outgoingText(args).matchAll(/\$\s?(\d+(?:\.\d{1,2})?)/g)].map((m) => Number(m[1]));
+  if (typeof args.acceptPriceUsd === "number") amounts.push(args.acceptPriceUsd);
+  return amounts.filter((a) => a < LISTING.floorUsd);
 }
 
 type Ctx = {
@@ -81,7 +102,15 @@ export function decide(def: ToolDef | null, toolName: string, rawArgs: unknown, 
       return log({ decision: "deny", rule: "P6-disabled-in-sample", reason: `${def.name} is disabled: the sample workspace has no real integration for it.`, riskCost: def.riskCost }, args);
     const trusted = trustedContacts();
     const ownDomain = SAMPLE_OWNER.email.split("@")[1];
-    const untrusted = recipientsOf(args).filter((r) => !trusted.has(r) && r.split("@")[1] !== ownDomain);
+    const text = outgoingText(args);
+    if (text && containsPrivateAddress(text))
+      return log({ decision: "deny", rule: "P13-private-data", reason: "The message would reveal a home address. Private data never leaves in a message, whoever asks and whatever was approved.", riskCost: def.riskCost }, args);
+    if (def.name === "marketplace.reply") {
+      const low = belowFloor(args);
+      if (low.length)
+        return log({ decision: "deny", rule: "P14-below-floor", reason: `The reply would commit to $${Math.min(...low)}, below your floor of $${LISTING.floorUsd}.`, riskCost: def.riskCost }, args);
+    }
+    const untrusted = recipientsOf(def.name, args).filter((r) => !trusted.has(r) && r.split("@")[1] !== ownDomain);
     if (untrusted.length)
       return log({ decision: "deny", rule: "P7-untrusted-recipient", reason: `Recipient ${untrusted.join(", ")} is not a trusted contact.${origin.taint.length ? ` The request came from a model that had read untrusted content (${origin.taint.join(", ")}).` : ""}`, riskCost: def.riskCost }, args);
     const remaining = ctx.simulatedRiskRemaining ?? riskRemaining();
