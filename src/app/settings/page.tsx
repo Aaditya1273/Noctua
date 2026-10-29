@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LimitsForm, MemoryManager, ModelCheck } from "@/components/actions";
 import { Card, CardHeader, Mono, Notice, PageHeader } from "@/components/ui";
 import { getLimits } from "@/lib/accounting.ts";
-import { getConfig, isLive } from "@/lib/config.ts";
+import { getConfig, isLive, providerName } from "@/lib/config.ts";
 import { listMemories } from "@/lib/memory.ts";
 
 export const metadata: Metadata = { title: "Memory & settings" };
@@ -16,7 +16,7 @@ export default function SettingsPage() {
       <PageHeader title="Memory & settings" lead="Everything Noctua remembers is listed here and can be deleted. Budgets and limits are enforced on the server before every model call." />
       <div className="space-y-6">
         <Card>
-          <CardHeader title="Model provider" meta="NVIDIA Nemotron models served by Nebius Token Factory (OpenAI-compatible API). Configured through environment variables; the key never reaches the browser." />
+          <CardHeader title="Model provider" meta={`NVIDIA Nemotron models served by ${providerName(cfg)} (OpenAI-compatible API). Configured through environment variables; the key never reaches the browser.`} />
           <dl className="grid gap-x-8 gap-y-4 px-5 py-5 text-[13.5px] md:grid-cols-2">
             <div><dt className="font-medium text-ink">API key</dt><dd className="mt-1 text-muted">{live ? "Configured (NEBIUS_API_KEY)" : "Not configured — demo mode"}</dd></div>
             <div><dt className="font-medium text-ink">Base URL</dt><dd className="mt-1 break-all"><Mono>{cfg.baseUrl}</Mono></dd></div>
@@ -43,7 +43,7 @@ export default function SettingsPage() {
         <Card>
           <CardHeader title="What leaves this machine" />
           <ul className="list-disc space-y-1.5 py-4 pl-10 pr-5 text-[13.5px] text-muted">
-            <li>In live mode, Apprentice runs send the request text, planner notes from memory, and the sample messages being triaged to Nebius Token Factory. Skill synthesis sends labelled examples.</li>
+            <li>In live mode, Apprentice runs send the request text, planner notes from memory, and the sample messages being triaged to {providerName(cfg)}. Skill synthesis sends labelled examples.</li>
             <li>Master runs send nothing. Journeyman runs send only the messages that need a reply draft.</li>
             <li>Receipts, traces, skills, memory and security events stay in the local SQLite database (<Mono>{cfg.dbPath.replace(process.cwd(), ".")}</Mono>).</li>
             <li>No web search or third-party connector is called; the sample workspace has none.</li>

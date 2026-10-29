@@ -3,7 +3,7 @@ import { Geist, Geist_Mono, Newsreader } from "next/font/google";
 import { connection } from "next/server";
 import { NavLinks } from "@/components/actions";
 import { OwlMark } from "@/components/ui";
-import { getConfig, isLive } from "@/lib/config.ts";
+import { getConfig, isLive, providerName } from "@/lib/config.ts";
 import "./globals.css";
 
 const sans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -37,7 +37,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
               {live ? (
                 <>
                   <p className="flex items-center gap-1.5 font-medium text-accent"><span className="size-1.5 rounded-full bg-accent" aria-hidden />Live inference</p>
-                  <p className="mt-1 break-words text-muted">Nebius Token Factory · <span className="font-mono text-[11.5px]">{cfg.models.fast}</span></p>
+                  <p className="mt-1 break-words text-muted">{providerName(cfg)} · <span className="font-mono text-[11.5px]">{cfg.models.fast}</span></p>
                 </>
               ) : (
                 <>

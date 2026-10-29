@@ -1,6 +1,6 @@
 // Budget enforcement and usage accounting. Every model call goes through callModel().
 import type { z } from "zod";
-import { getConfig, type Config } from "./config.ts";
+import { getConfig, providerName, type Config } from "./config.ts";
 import { db, getSetting, id, nowIso, setSetting, startOfDayIso, tx } from "./db.ts";
 import { chatCompletion, extractJson, ProviderError, type ChatMessage, type Completion } from "./provider.ts";
 
@@ -108,7 +108,7 @@ export function reserve(taskId: string | null, purpose: string, model: string, m
       throw new BudgetError(`Daily budget would be exceeded ($${used.committedUsd.toFixed(4)} committed + up to $${worstUsd.toFixed(4)} > $${limits.dailyBudgetUsd.toFixed(2)}).`);
     const uid = id("use");
     db().prepare(`INSERT INTO usage(id, task_id, created_at, purpose, provider, model, status, reserved_usd, reserved_tokens)
-      VALUES(?, ?, ?, ?, 'nebius-token-factory', ?, 'reserved', ?, ?)`).run(uid, taskId, nowIso(), purpose, model, worstUsd, tokens);
+      VALUES(?, ?, ?, ?, ?, ?, 'reserved', ?, ?)`).run(uid, taskId, nowIso(), purpose, providerName(cfg), model, worstUsd, tokens);
     return uid;
   });
 }

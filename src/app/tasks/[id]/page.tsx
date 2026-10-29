@@ -186,7 +186,7 @@ export default async function TaskPage({ params }: PageProps<"/tasks/[id]">) {
 
         {t.usage.length > 0 && (
           <Card>
-            <CardHeader title="Model calls" meta="Provider: Nebius Token Factory (OpenAI-compatible API)." />
+            <CardHeader title="Model calls" meta={`Provider: ${[...new Set(t.usage.map((u) => u.provider))].join(", ")} (OpenAI-compatible API).`} />
             <div className="overflow-x-auto">
               <table className="w-full min-w-[640px] text-left text-[13px]">
                 <thead className="text-[12px] uppercase tracking-wide text-muted"><tr className="border-b border-line">{["Purpose", "Model", "Status", "In", "Out", "Cost", "Latency", "Attempts"].map((h) => <th key={h} className="px-5 py-2 font-medium">{h}</th>)}</tr></thead>
