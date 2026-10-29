@@ -67,6 +67,7 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      document.documentElement.classList.remove("intro-pending");
       document.documentElement.classList.add("no-motion");
       return;
     }
@@ -79,6 +80,8 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
 
     const ctx = gsap.context(() => {
       const q = gsap.utils.selector(root);
+      // The hero stays hidden (see the inline script in page.tsx) until the intro has taken control of it.
+      requestAnimationFrame(() => document.documentElement.classList.remove("intro-pending"));
 
       // 1. Scribble transition (on load, and again when the logo is clicked), then hero reveal
       const path = q("[data-scribble] path")[0] as unknown as SVGPathElement | undefined;
@@ -87,16 +90,16 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
         if (!path || gsap.isTweening(path)) return gsap.timeline();
         const len = path.getTotalLength() + 5;
         const IN = 1.5, OUT = 1.8;
-        gsap.set(q("[data-scribble]"), { display: "block", scale: 0.55 });
-        gsap.set(path, { strokeDasharray: len, strokeDashoffset: len, strokeWidth: "2%" });
+        gsap.set(q("[data-scribble]"), { display: "block", scale: 0.7 });
+        gsap.set(path, { strokeDasharray: len, strokeDashoffset: len, strokeWidth: "6%" });
         const wiggle = gsap.to(q("[data-scribble-wiggle]"), { rotation: 6, duration: 0.15, repeat: -1, yoyo: true, ease: "steps(1)", paused: true });
         return gsap.timeline({ onComplete: () => { wiggle.kill(); gsap.set(q("[data-scribble]"), { display: "none" }); } })
           .to(path, { strokeDashoffset: 0, duration: IN, ease: "power1.inOut" }, 0)
-          .to(path, { strokeWidth: "9%", duration: IN, ease: "power2.inOut" }, 0)
+          .to(path, { strokeWidth: "24%", duration: IN, ease: "power2.inOut" }, 0)
           .to(logoLayer, { autoAlpha: 1, duration: IN * 0.4, ease: "power2.out", onStart: () => { wiggle.play(); } }, IN * 0.55)
           .call(() => { lenis.scrollTo(0, { immediate: true }); onCovered?.(); }, undefined, IN)
           .to(path, { strokeDashoffset: -len, duration: OUT, ease: "power2.inOut" }, IN)
-          .to(path, { strokeWidth: "2%", duration: OUT, ease: "power2.inOut" }, IN)
+          .to(path, { strokeWidth: "6%", duration: OUT, ease: "power2.inOut" }, IN)
           .to(logoLayer, { autoAlpha: 0, duration: 0.25 }, IN + OUT * 0.4);
       };
       const intro = gsap.timeline();
@@ -215,7 +218,7 @@ export function LandingExperience({ stats, muse }: { stats: LandingStats; muse: 
     <div ref={root} className="overflow-x-clip bg-black font-display text-ink">
       {/* Scribble transition: a pen stroke that thickens as it draws, covers the screen, then un-draws */}
       <svg data-scribble className="pointer-events-none fixed left-[-50vw] top-[-50vh] z-[70] h-[200vh] w-[200vw] text-[#ececec]" viewBox="0 0 1000 1000" preserveAspectRatio="none" fill="none" aria-hidden>
-        <path d="M70 49 C376 31 681 89 943 71 C636 53 330 131 67 113 C365 95 663 176 918 158 C623 140 329 196 76 178 C379 160 681 246 940 228 C633 210 325 282 61 264 C362 246 664 307 922 289 C628 271 333 361 81 343 C380 325 679 387 935 369 C628 351 321 421 58 403 C362 385 667 472 928 454 C632 436 337 493 83 475 C379 457 675 537 929 519 C624 501 319 580 57 562 C364 544 671 601 935 583 C636 565 337 652 81 634 C376 616 670 685 922 667 C621 649 319 713 61 695 C368 677 676 766 940 748 C638 730 336 790 77 772 C371 754 666 827 918 809 C620 791 322 876 66 858 C373 840 680 897 943 879 C638 861 332 943 71 925 C367 907 663 983 917 965"
+        <path d="M-120 -30 Q-75 -75 -30 -120 Q106 -80 162 -120 Q54 -12 -120 162 Q-80 298 -120 353 Q95 138 353 -120 Q489 -80 545 -120 Q193 232 -120 545 Q-80 681 -120 737 Q342 274 737 -120 Q872 -80 928 -120 Q402 407 -120 928 Q-80 1064 -120 1120 Q468 532 1120 -120 Q1160 16 1120 72 Q619 572 72 1120 Q207 1160 263 1120 Q709 675 1120 263 Q1160 399 1120 455 Q753 822 455 1120 Q591 1160 647 1120 Q889 878 1120 647 Q1160 782 1120 838 Q1010 948 838 1120 Q974 1160 1030 1120 Q1050 1100 1120 1030"
           stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" style={{ strokeWidth: "0%" }} />
       </svg>
       <div data-scribble-logo className="pointer-events-none fixed inset-0 z-[71] grid place-items-center opacity-0" aria-hidden>

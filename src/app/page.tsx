@@ -40,5 +40,11 @@ export default async function Landing() {
   await connection(); // render per request so a cached old copy is never served
   const muse = { thread: MARKET_THREAD, naive: NAIVE_REPLY, safe: REFERENCE_REPLY, floor: LISTING.floorUsd,
     price: { product: PRICE_REFERENCE.product, min: PRICE_REFERENCE.monthlyUsd.min, max: PRICE_REFERENCE.monthlyUsd.max, source: PRICE_REFERENCE.source } };
-  return <LandingExperience stats={stats()} muse={muse} />;
+  return (
+    <>
+      {/* Hide the hero before first paint so it never flashes ahead of the intro; a timer un-hides it if scripts never run. */}
+      <script dangerouslySetInnerHTML={{ __html: "if(!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.classList.add('intro-pending');setTimeout(function(){document.documentElement.classList.remove('intro-pending')},4000)}" }} />
+      <LandingExperience stats={stats()} muse={muse} />
+    </>
+  );
 }

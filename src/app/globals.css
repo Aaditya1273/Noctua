@@ -86,5 +86,6 @@ h1.font-serif, h2.font-serif, .font-serif { letter-spacing: -0.035em; font-weigh
 @keyframes vdown { from { transform: translateY(-50%); } to { transform: translateY(0); } }
 .no-motion [data-scribble], .no-motion [data-scribble-logo] { display: none; }
 [data-scribble] { display: none; transform-origin: 50% 50%; }
+.intro-pending [data-hero] { visibility: hidden; }
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
