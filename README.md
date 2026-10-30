@@ -1,6 +1,8 @@
-<p align="center"><a href="https://noctua-gkbv.onrender.com"><img src="docs/img/film/trailer.webp" width="100%" alt="Noctua film highlights: Reason once. The NVIDIA and Nebius marks meet. A repeat runs with 0 model calls. Muse said yes. Same job, different agent. The noctua end card."></a></p>
+<p align="center"><a href="https://youtu.be/MitssZU897o"><img src="docs/img/film/trailer.webp" width="100%" alt="Noctua film highlights: Reason once. The NVIDIA and Nebius marks meet. A repeat runs with 0 model calls. Muse said yes. Same job, different agent. The noctua end card."></a></p>
 
 <h3 align="center">Reason once. Then never again.</h3>
+
+<p align="center"><a href="https://youtu.be/MitssZU897o"><img src="https://img.shields.io/badge/Watch%20the%20film-3%20min-fafafa?labelColor=111111&logo=youtube&logoColor=white&style=for-the-badge" alt="Watch the 3-minute film on YouTube"></a>&nbsp;&nbsp;<a href="https://noctua-gkbv.onrender.com"><img src="https://img.shields.io/badge/Try%20it-live%20demo-fafafa?labelColor=111111&style=for-the-badge" alt="Try the live demo"></a></p>
 
 <p align="center">
   <b>The personal AI agent that learns your repeated tasks, then repeats them with zero model inference,<br>and can't be tricked into sending your stuff away.</b>
@@ -8,7 +10,8 @@
 
 <p align="center">
   <a href="https://noctua-gkbv.onrender.com"><b>Live demo</b></a> ·
-  <a href="#the-film-chapter-by-chapter">The film</a> ·
+  <a href="https://youtu.be/MitssZU897o">Watch the film</a> ·
+  <a href="#the-film-chapter-by-chapter">Chapters</a> ·
   <a href="#measured-not-claimed">Benchmark</a> ·
   <a href="#same-job-different-agent">Comparison</a> ·
   <a href="#for-judges-three-ways-to-check-it">For judges</a> ·
@@ -78,7 +81,7 @@ Two things are true of almost every personal agent today:
 
 ## The film, chapter by chapter
 
-Each clip below is a chapter of the 3-minute demo film. The product chapters are one real session, recorded live on
+Each clip below is a chapter of the [3-minute demo film](https://youtu.be/MitssZU897o). The product chapters are one real session, recorded live on
 Nebius Token Factory on 30 Oct 2026 and sped up 1.6–1.9×; the cursor and camera are drawn by the film from that
 session's own event log, so every click you see lands where the real click happened.
 

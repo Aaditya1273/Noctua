@@ -96,6 +96,7 @@ is shown as Unknown and disables the monetary cap rather than guessing.
 
 - Demo URL: https://noctua-gkbv.onrender.com (Render free web service, live Nebius inference; verified end to end on 2026-10-29. Free instances sleep after ~15 idle minutes, so the first load can take up to a minute, and data resets on restart.)
 - Repository URL: https://github.com/Aaditya1273/Noctua
+- Demo video: https://youtu.be/MitssZU897o (3:02)
 - Video: **not recorded** (script in DEMO_SCRIPT.md)
 
 ## Feedback to Nebius and NVIDIA
