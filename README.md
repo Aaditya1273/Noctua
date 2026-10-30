@@ -17,7 +17,8 @@
   <a href="#for-judges-three-ways-to-check-it">For judges</a> ·
   <a href="#deep-dive">Deep dive</a> ·
   <a href="SECURITY.md">Security model</a> ·
-  <a href="docs/whitepaper/noctua-whitepaper.pdf"><b>Whitepaper (PDF)</b></a>
+  <a href="docs/whitepaper/noctua-whitepaper.pdf"><b>Whitepaper (PDF)</b></a> ·
+  <a href="docs/Noctua-Pitch.pdf"><b>Pitch deck (PDF)</b></a>
 </p>
 
 <p align="center">
