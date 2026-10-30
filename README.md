@@ -292,6 +292,15 @@ connection** to confirm the model IDs against your catalogue, or run `npm run sm
   check. Called server-side only; the key never reaches the browser. Token counts come from the API's `usage` field and
   are priced from `NEBIUS_PRICING`.
 
+**Proof of live use on Nebius.** The Token Factory console for the project's organisation: Nemotron 3 Super input, cached and output tokens billed in eu-north1 between 30 Sep and 30 Oct 2026 ($0.07 total), and the paid $1.00 top-up invoice of 29 Oct 2026.
+
+<table>
+<tr>
+<td width="50%" valign="top"><a href="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/nebius-usage.png"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/nebius-usage.png" alt="Nebius Token Factory usage page: Nvidia-Nemotron-3-Super-120B-A12B input, cached and output tokens in eu-north1, 30 Sep to 30 Oct 2026, total $0.07"></a><br><sub><b>Usage.</b> Nemotron 3 Super tokens billed by Token Factory.</sub></td>
+<td width="50%" valign="top"><a href="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/nebius-payments.png"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/nebius-payments.png" alt="Nebius Token Factory payments page: invoice of 29 Oct 2026, $1.00, paid"></a><br><sub><b>Payments.</b> The $1.00 invoice that funded the live runs, paid.</sub></td>
+</tr>
+</table>
+
 ---
 
 # Deep dive
