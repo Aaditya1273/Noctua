@@ -33,7 +33,8 @@ export type TaskResult = {
 const PlanSchema = z.object({
   goal: z.string().min(1).max(300),
   supported: z.boolean(),
-  steps: z.array(z.object({ tool: z.string().max(60), args: z.record(z.string(), z.unknown()).default({}), why: z.string().max(200).optional() })).max(10),
+  // Unknown tool names fail validation here so the model gets its one repair attempt; policy still checks every step.
+  steps: z.array(z.object({ tool: z.string().max(60).refine((t) => Object.hasOwn(TOOLS, t), { message: "not a tool name; use one exact name from the tool list" }), args: z.record(z.string(), z.unknown()).default({}), why: z.string().max(200).optional() })).max(10),
 });
 type Plan = z.infer<typeof PlanSchema>;
 

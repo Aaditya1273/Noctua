@@ -221,3 +221,23 @@ test("planner naming a recipient ('Priya') is resolved to the inbox sender and t
     await mock.close();
   }
 });
+
+test("a garbled tool name in the plan gets one repair attempt instead of failing the task", async () => {
+  const mock = await mockProvider((body, n) => {
+    const sys = body.messages[0].content;
+    if (sys.includes("Noctua's planner")) {
+      const repairing = body.messages.some((m) => m.content.includes("That response was invalid"));
+      const steps = repairing ? ["inbox.list", "guard.injection_scan", "triage.llm", "digest.compose"] : ["inbox.list", "triage.guard.injection_scan, ", "triage.llm"];
+      return { content: JSON.stringify({ goal: "Triage", supported: true, steps: steps.map((tool) => ({ tool, args: {} })) }) };
+    }
+    return goodModel(body, n);
+  });
+  try {
+    freshLive(mock);
+    const t = getTask((await runTask({ prompt: PROMPT, day: 1, route: "auto" })).taskId)!;
+    assert.equal(t.status, "done", t.error ?? "");
+    assert.ok(t.usage.some((u) => u.purpose === "plan:repair"), "the repair call is on the receipt");
+  } finally {
+    await mock.close();
+  }
+});
