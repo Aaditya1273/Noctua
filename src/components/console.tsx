@@ -240,7 +240,7 @@ export function Console({ live, provider, inboxes, initialPrompt }: { live: bool
             <h1 className="mt-4 text-[32px] font-semibold leading-tight tracking-[-0.03em] text-ink">
               Reason <span className="font-italic font-normal [font-style:italic]">once.</span><br className="sm:hidden" /> Then never again.
             </h1>
-            <p className="mt-2 text-[15px] text-[#9a9a9a]">I learn your tasks, then do them for free.</p>
+            <p className="mt-2 text-[15px] text-[#9a9a9a]">A sneaky email can’t trick me into sending your stuff away.</p>
           </div>
           <div className="mt-7">{composer(true)}</div>
           <div className="mt-4 flex flex-wrap justify-center gap-2">
