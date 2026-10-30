@@ -53,7 +53,7 @@ export function Console({ live, provider, inboxes, initialPrompt }: { live: bool
   const [force, setForce] = useState(false);
   const [now, setNow] = useState(0);
   const [preview, setPreview] = useState<RoutePreview | null>(null);
-  const [menu, setMenu] = useState(false);
+  const [menu, setMenu] = useState<"" | "actions" | "day">("");
   const [multi, setMulti] = useState(false); // composer grows from a pill into a box once the draft wraps
   const menuRef = useRef<HTMLDivElement>(null);
   const askRef = useRef<HTMLTextAreaElement>(null);
@@ -74,7 +74,7 @@ export function Console({ live, provider, inboxes, initialPrompt }: { live: bool
   }, [text, turns.length]);
   useEffect(() => {
     if (!menu) return;
-    const close = (e: Event) => { if (e instanceof KeyboardEvent ? e.key === "Escape" : !menuRef.current?.contains(e.target as Node)) setMenu(false); };
+    const close = (e: Event) => { if (e instanceof KeyboardEvent ? e.key === "Escape" : !menuRef.current?.contains(e.target as Node)) setMenu(""); };
     document.addEventListener("pointerdown", close);
     document.addEventListener("keydown", close);
     return () => { document.removeEventListener("pointerdown", close); document.removeEventListener("keydown", close); };
@@ -170,10 +170,10 @@ export function Console({ live, provider, inboxes, initialPrompt }: { live: bool
   const ctl = "flex h-9 items-center gap-1.5 whitespace-nowrap rounded-full px-3 text-[13.5px] transition-colors";
   const composer = (glow: boolean) => (
     <div ref={menuRef} className="relative">
-      {menu && (
+      {menu === "actions" && (
         <div role="menu" className="absolute inset-x-0 bottom-full z-30 mb-2 rounded-[22px] border border-white/[0.1] bg-[#2a2a2a] p-1.5 shadow-[0_-12px_40px_-16px_rgb(0_0_0/0.9)]">
           {actions.map(({ icon: Icon, label, sub, run }) => (
-            <button key={label} type="button" role="menuitem" onClick={() => { setMenu(false); void run(); }}
+            <button key={label} type="button" role="menuitem" onClick={() => { setMenu(""); void run(); }}
               className="flex w-full items-center gap-3 rounded-[14px] px-3 py-2.5 text-left hover:bg-white/[0.07] focus-visible:bg-white/[0.07]">
               <Icon size={17} className="shrink-0 text-ink-2" aria-hidden />
               <span className="shrink-0 text-[14px] text-ink">{label}</span>
@@ -187,8 +187,8 @@ export function Console({ live, provider, inboxes, initialPrompt }: { live: bool
         className={cx("rounded-[28px] border border-white/[0.1] bg-[#2a2a2a] p-1.5 transition-[border-color,box-shadow] focus-within:border-white/20",
           glow ? "shadow-[0_0_0_1px_rgb(255_255_255/0.02),0_0_70px_-12px_rgb(255_255_255/0.14)]" : "shadow-[0_8px_30px_-12px_rgb(0_0_0/0.9)]")}>
         <div className={cx("flex items-end gap-1", multi && "flex-wrap")}>
-          <button type="button" onClick={() => setMenu(!menu)} aria-expanded={menu} aria-haspopup="menu" aria-label="More actions" disabled={busy}
-            className={cx("grid size-9 shrink-0 place-items-center rounded-full text-ink-2 transition-[background-color,transform] duration-200 hover:bg-white/10 disabled:opacity-40", menu && "rotate-45 bg-white/10")}>
+          <button type="button" onClick={() => setMenu(menu === "actions" ? "" : "actions")} aria-expanded={menu === "actions"} aria-haspopup="menu" aria-label="More actions" disabled={busy}
+            className={cx("grid size-9 shrink-0 place-items-center rounded-full text-ink-2 transition-[background-color,transform] duration-200 hover:bg-white/10 disabled:opacity-40", menu === "actions" && "rotate-45 bg-white/10")}>
             <Plus size={19} aria-hidden />
           </button>
           <label htmlFor="ask" className="sr-only">Message Noctua</label>
@@ -198,12 +198,24 @@ export function Console({ live, provider, inboxes, initialPrompt }: { live: bool
             placeholder="Ask Noctua"
             className={cx("min-w-0 flex-1 resize-none bg-transparent px-1.5 py-[6px] text-[16px] leading-6 text-ink placeholder:text-[#9a9a9a] focus:outline-none focus-visible:outline-none", multi && "order-first basis-full px-3 pt-2.5")} />
           <div className="ml-auto flex shrink-0 items-center gap-1">
-            <label className={cx(ctl, "relative cursor-pointer text-ink-2 hover:bg-white/10")} title="Which sample inbox Noctua works on">
-              Day {day}<ChevronDown size={14} className="text-[#9a9a9a]" aria-hidden />
-              <select value={day} onChange={(e) => setDay(Number(e.target.value))} aria-label="Sample inbox day" className="absolute inset-0 cursor-pointer opacity-0 [color-scheme:dark]">
-                {inboxes.map((i) => <option key={i.day} value={i.day}>Day {i.day} · {i.count} emails</option>)}
-              </select>
-            </label>
+            <div className="relative">
+              <button type="button" onClick={() => setMenu(menu === "day" ? "" : "day")} aria-haspopup="listbox" aria-expanded={menu === "day"} title="Which sample inbox Noctua works on"
+                className={cx(ctl, "text-ink-2 hover:bg-white/10", menu === "day" && "bg-white/10")}>
+                Day {day}<ChevronDown size={14} className={cx("text-[#9a9a9a] transition-transform", menu === "day" && "rotate-180")} aria-hidden />
+              </button>
+              {menu === "day" && (
+                <div role="listbox" aria-label="Sample inbox day" className="absolute bottom-full right-0 z-30 mb-3 w-[210px] rounded-[18px] border border-white/[0.1] bg-[#2a2a2a] p-1.5 shadow-[0_-12px_40px_-16px_rgb(0_0_0/0.9)]">
+                  <p className="px-3 pb-1 pt-1.5 text-[12px] text-[#9a9a9a]">Sample inbox</p>
+                  {inboxes.map((i) => (
+                    <button key={i.day} type="button" role="option" aria-selected={day === i.day} onClick={() => { setDay(i.day); setMenu(""); }}
+                      className="flex w-full items-center gap-2 rounded-[12px] px-3 py-2 text-left text-[14px] text-ink hover:bg-white/[0.07]">
+                      Day {i.day}<span className="text-[13px] text-[#9a9a9a]">{i.count} emails</span>
+                      {day === i.day && <Check size={15} className="ml-auto" aria-hidden />}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             <button type="button" aria-pressed={force} onClick={() => setForce(!force)} title="Think from scratch: skip learned skills and reason it through"
               className={cx(ctl, force ? "bg-white text-black" : "text-ink-2 hover:bg-white/10")}>
               <Lightbulb size={16} aria-hidden /><span className="hidden sm:inline">Think</span>
