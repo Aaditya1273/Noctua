@@ -237,7 +237,10 @@ export function Console({ live, provider, inboxes, initialPrompt }: { live: bool
         <div className="relative w-full max-w-[720px] rise">
           <div className="flex flex-col items-center text-center">
             <Owl size={92} mood="idle" />
-            <h1 className="mt-4 text-[28px] font-medium tracking-[-0.02em] text-ink">What can I handle for you?</h1>
+            <h1 className="mt-4 text-[32px] font-semibold leading-tight tracking-[-0.03em] text-ink">
+              Reason <span className="font-italic font-normal [font-style:italic]">once.</span><br className="sm:hidden" /> Then never again.
+            </h1>
+            <p className="mt-2 max-w-[460px] text-[14.5px] leading-6 text-[#9a9a9a]">The first time, I think it through. After that, I do it for free. And nothing gets sent without your yes.</p>
           </div>
           <div className="mt-7">{composer(true)}</div>
           <div className="mt-4 flex flex-wrap justify-center gap-2">
