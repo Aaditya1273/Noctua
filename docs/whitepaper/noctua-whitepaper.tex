@@ -112,6 +112,9 @@ sees whether a request will run from a skill, need approval, or be refused \emph
 \item \textbf{A quantitative analysis} from measured unit costs: cumulative spend, latency, token use, reservation
 headroom, capacity under a cap, and a drift model that predicts the measured saving within 2.2 points and gives the
 break-even drift rate, $d^\ast\approx0.59$ (Section~\ref{sec:quant}).
+\item \textbf{Worked derivations} of every formula on real inputs, with closed forms for skill payback, the
+expected crossover run, free runs between demotions, the admissible risk days and the sample-size bounds
+(Section~\ref{sec:derive}).
 \item \textbf{A live evaluation} with per-run receipts, Attack Night (ten adversarial cases) and a replay of the Muse
 incident, reported with its limits, and ten integration findings that documentation-driven development would have
 shipped as silent failures (Sections~\ref{sec:eval}--\ref{sec:findings}).
@@ -737,7 +740,7 @@ Forward to an outside address & plan & 522 & 102 & 1{,}423 & 2.28$\times$ & \$0.
 Reply to a colleague & plan & 522 & 209 & 1{,}426 & 1.95$\times$ & \$0.00034\\
  & triage & 778 & 539 & 2{,}341 & 1.78$\times$ & \$0.00072\\
  & draft & 334 & 217 & 1{,}846 & 3.35$\times$ & \$0.00030\\
-Marketplace listing & plan & 522 & 81 & 1{,}426 & 2.38$\times$ & \$0.00023\\
+Marketplace listing & plan & 522 & 81 & 1{,}426 & 2.36$\times$ & \$0.00023\\
  & draft & 183 & 78 & 587 & 2.25$\times$ & \$0.00013\\
 \midrule
 Session total & 9 calls & 4{,}558 & 2{,}118 & 14{,}474 & 2.17$\times$ & \$0.00327\\
@@ -762,7 +765,7 @@ Session total & 9 calls & 4{,}558 & 2{,}118 & 14{,}474 & 2.17$\times$ & \$0.0032
 \end{tikzpicture}
 \caption{Reservation against actual usage for each call of the session. The estimate
 $\lceil\text{chars}/3.5\rceil+\text{max\_out}$ never under-reserved: headroom is 1.78--3.35$\times$ in tokens.
-Because every reserved token is priced at the output rate, the dollar reservation is 4.2--6.3$\times$ the settled
+Because every reserved token is priced at the output rate, the dollar reservation is 2.9--5.6$\times$ the settled
 cost; a call is therefore refused while there is still real room under the cap, never admitted when there is not.}
 \label{fig:reserve}
 \end{figure}
@@ -882,6 +885,121 @@ product comparison: see the text.}
 exactly. Summaries and replies are not scored.}
 \label{fig:acc}
 \end{figure}
+
+\section{Derivations and Worked Calculations}\label{sec:derive}
+
+Each formula of Sections~\ref{sec:calculus}--\ref{sec:quant} is applied here to a real input from this paper's data,
+and the closed-form consequences used in the analysis are derived. Prices are $\pi_\text{in}=0.30$ and
+$\pi_\text{out}=0.90$ US dollars per million tokens; $\bar c_a=\$0.000809$ and $c_s=\$0.000551$ (Table~\ref{tab:unit}).
+
+\subsection{Routing, worked}
+The example prompt of the inbox skill tokenizes to twelve terms,
+\[
+\begin{aligned}T(e)=\{&\textit{review, inbox, identify, messages, requiring, attention,}\\ &\textit{summarize, urgent, items, prepare, suggested, replies}\}.\end{aligned}
+\]
+Table~\ref{tab:route} applies equation~(1) with $\theta=0.6$, $m=2$ to four prompts. The overlap coefficient divides by
+the \emph{smaller} set, so a short paraphrase that uses only the skill's own vocabulary still matches fully; a short
+prompt that drifts off it does not. The last prompt never reaches the formula: it contains an irreversible verb.
+
+\begin{table}[!htbp]
+\centering\small
+\caption{Equation (1) on real prompts, computed with the shipped \code{tokens} and \code{matchScore}.}
+\label{tab:route}
+\begin{tabularx}{\linewidth}{Xrrrl}
+\toprule
+Prompt $p$ & $|T(p)|$ & $|T(p)\cap T(e)|$ & $\mathrm{ov}(p)$ & Route\\
+\midrule
+the skill's own example & 12 & 12 & $12/12=1.00$ & skill\\
+``Review the inbox and summarize urgent items'' & 5 & 5 & $5/\min(5,12)=1.00$ & skill\\
+``Summarize my urgent emails'' & 3 & 2 & $2/\min(3,12)=0.67$ & skill ($\ge0.6$, $s=2\ge m$)\\
+``Forward the invoices in my inbox to archive@\dots'' & 6 & 1 & $1/6=0.17$ & Apprentice (verb rule first)\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Cost of a call, worked}
+For a call with $p$ prompt and $q$ completion tokens,
+\begin{equation}
+c(p,q)=\frac{p\,\pi_\text{in}+q\,\pi_\text{out}}{10^6}.
+\end{equation}
+The first triage call of the recorded session ($p=778$, $q=532$):
+$c=(778\cdot0.30+532\cdot0.90)/10^6=(233.4+478.8)/10^6=\$0.0007122$, exactly the settled cost in
+Table~\ref{tab:calls}. Its reservation was $\hat\tau=2{,}341$ tokens, so
+\[
+\hat w=\frac{2341\cdot\max(0.30,0.90)}{10^6}=\$0.0021069,\qquad
+\frac{\hat\tau}{p+q}=\frac{2341}{1310}=1.79,\qquad
+\frac{\hat w}{c}=\frac{0.0021069}{0.0007122}=2.96 .
+\]
+Over all nine calls the token headroom is $1.78$--$3.35\times$ and the dollar headroom $2.93$--$5.62\times$: the
+reservation is never below the settled amount, which is the property (G4) needs.
+
+\paragraph{Reservations against a small cap.} Under the public demo's cap $B=\$0.03$, the number of triage-sized
+reservations the cap admits on an empty day is $\lfloor0.03/0.0021069\rfloor=14$, while the settled spend of the same
+calls would admit $\lfloor0.03/0.0007122\rfloor=42$. The conservative estimate costs capacity, not safety: the
+demo refuses a call roughly three times sooner than it strictly has to.
+
+\subsection{Payback of a skill}
+A skill costs $c_s$ once and saves $\bar c_a$ on every Master run. The number of Master runs needed to repay it is
+\begin{equation}
+k^\ast=\Bigl\lceil\frac{c_s}{\bar c_a}\Bigr\rceil=\Bigl\lceil\frac{0.000551}{0.000809}\Bigr\rceil=\lceil0.68\rceil=1,
+\end{equation}
+so a skill pays for its own synthesis on its first free run, and every run after that is net saving.
+
+\subsection{When Noctua first leads, in expectation}
+From the expected-cost model, Noctua is cheaper after $n$ runs when
+$(\bar c_a+c_s)(1+(n-1)d)<n\,\bar c_a$. Solving for $n$ (valid when $d<d^\ast$),
+\begin{equation}
+n>n^\ast(d)=\frac{(\bar c_a+c_s)(1-d)}{\bar c_a-d\,(\bar c_a+c_s)} .
+\end{equation}
+With no drift, $n^\ast(0)=1.68$, so Noctua leads from the second run. At the benchmark's drift $d=1/3$,
+\[
+n^\ast(\tfrac13)=\frac{0.0013602\cdot\tfrac23}{0.0008094-\tfrac13\cdot0.0013602}=\frac{0.00090681}{0.00035603}=2.55,
+\]
+so Noctua leads, in expectation, from the third run. The measured curve (Figure~\ref{fig:cum}) leads at run~2,
+drops behind at the first demotion and leads for good from run~4 --- one realization around the expected crossover.
+
+\subsection{Free runs between demotions}
+If each repeat independently demotes with probability $d$, the number of Master runs a skill serves before it is
+demoted is geometric, with
+\begin{equation}
+\mathbb{E}[\text{free runs per skill}]=\frac{1-d}{d}, \qquad \mathbb{E}[\text{latency of a repeat}]=d\,L_a+(1-d)\,L_m,
+\end{equation}
+where $L_a$ and $L_m$ are the Apprentice and Master latencies. At the observed $d=1/3$ a skill serves
+$\tfrac{2/3}{1/3}=2$ free runs on average --- the benchmark's v1 served one and v2 served two, and v3 had served one
+when the run ended. With $L_a=3{,}524$\,ms and $L_m=1$\,ms (medians), the expected repeat latency is 1\,ms with no drift,
+353\,ms at $d=0.1$ and 1{,}175\,ms at $d=1/3$: even with the benchmark's drift, a repeat is on average three times
+faster than reasoning it again.
+
+\subsection{Demotion, worked}
+Run~3 of the benchmark is the first demotion. The Day~2 message \emph{``URGENT: payroll file rejected by the bank''}
+contains the markers $\mathrm{urg}(e)=\{\textit{urgent},\textit{rejected}\}\neq\emptyset$, and v1's rules labelled it
+FYI, so the urgency invariant of equation~(5) failed. Independently, only half of the Day~2 messages matched a v1
+rule, $\mathrm{cov}=0.50<0.6$. Either condition alone demotes the skill; the run's receipt records both, and the
+task re-ran on Nemotron in the same request.
+
+\subsection{What a day of risk points admits}
+With costs 3 (send), 5 (forward) and 2 (Marketplace reply) and $R=10$, the admissible days are the non-negative
+integer solutions of
+\begin{equation}
+3x+5y+2z\le10 .
+\end{equation}
+There are 20 solutions, 19 of them non-empty; the largest number of irreversible actions in a day is five (five
+Marketplace replies), and the most mixed day is one send, one forward and one reply (10 points). Payments (10) and
+deletions (8) are denied by P6 in the sample workspace, so they never enter the count.
+
+\subsection{Approval binding}
+An approval is bound to $h(u,a)$, a 256-bit SHA-256 digest. Making a different action $(u',a')$ consume the same
+approval requires $h(u',a')=h(u,a)$, a second preimage, for which no attack better than about $2^{256}$ work is
+known; even a generic collision search needs about $2^{128}$. Since the arguments are canonicalized before hashing,
+two encodings of the \emph{same} action hash identically, and any change to a recipient, subject or body changes the
+digest --- which is exactly the P10 behaviour Attack Night's approval-replay case checks.
+
+\subsection{How much the small samples can say}
+Attack Night stopped 10 of 10 attacks. With zero failures in $n$ trials, the one-sided 95\% lower bound on the
+per-attack stop rate is $0.05^{1/n}$, which for $n=10$ is $0.74$. The 48 of 50 labels give a two-sided 95\%
+Clopper--Pearson interval of $[0.863, 0.995]$ (Table~\ref{tab:unit}). Both are stated to make the sample sizes
+visible: ten attacks show the mechanism stops the attacks it was built for, not that it stops 99\% of attacks in the
+wild.
 
 \section{Findings from Testing Against the Live Model}\label{sec:findings}
 
