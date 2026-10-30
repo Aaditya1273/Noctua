@@ -4,9 +4,9 @@ import { BudgetError, budgetStatus, callModelJson, ModelOutputError } from "./ac
 import { getConfig, isLive } from "./config.ts";
 import { db, id, json, nowIso } from "./db.ts";
 import { INBOX_DAYS, WORKSPACE_DAYS } from "./fixtures.ts";
-import { listMemories } from "./memory.ts";
+import { listMemories, trustedContacts } from "./memory.ts";
 import { ProviderError } from "./provider.ts";
-import { executeSkill, familyOf, findSkillFor, getSkill, setSkillState, verifySkillSignature, type Skill, type Tier } from "./skills.ts";
+import { IRREVERSIBLE_VERBS, executeSkill, familyOf, findSkillFor, getSkill, setSkillState, verifySkillSignature, type Skill, type Tier } from "./skills.ts";
 import { TOOLS, invokeTool, newState, note, toolCatalog, type ExecState, type ProposedAction } from "./tools.ts";
 import { firstName, type TriageItem } from "./triage.ts";
 
@@ -156,6 +156,22 @@ async function runApprentice(s: ExecState, prompt: string): Promise<{ plan: Plan
   // A request that only asks for an action (e.g. "forward X") is complete once policy has decided on it.
   if (!s.items && s.actions.length === 0) return { plan, status: "failed", error: "The plan finished without triaging the inbox." };
   return { plan, status: "done" };
+}
+
+export type RoutePreview =
+  | { kind: "blocked"; addresses: string[] }
+  | { kind: "skill"; name: string; version: number; tier: Tier; overlap: number }
+  | { kind: "act" }
+  | { kind: "think" };
+
+/** What runTask would do with this prompt, without running it: no model call, no tool call, no writes. */
+export function previewRoute(prompt: string): RoutePreview {
+  const trusted = trustedContacts();
+  const outside = [...new Set((prompt.match(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g) ?? []).map((a) => a.toLowerCase()))].filter((a) => !trusted.has(a));
+  if (outside.length && IRREVERSIBLE_VERBS.test(prompt)) return { kind: "blocked", addresses: outside };
+  const m = findSkillFor(prompt);
+  if (m) return { kind: "skill", name: m.skill.name, version: m.skill.version, tier: m.skill.tier, overlap: m.overlap };
+  return IRREVERSIBLE_VERBS.test(prompt) ? { kind: "act" } : { kind: "think" };
 }
 
 export type RunOutcome = { taskId: string; status: TaskStatus };

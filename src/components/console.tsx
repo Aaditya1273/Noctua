@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { ArrowUp, Check, ChevronRight, Loader2, X } from "lucide-react";
+import { ArrowUp, Check, ChevronDown, ChevronRight, GraduationCap, Inbox, Lightbulb, Loader2, Plus, ShieldAlert, Store, X } from "lucide-react";
 import type { TaskView } from "@/lib/receipts.ts";
 import type { EvalReport } from "@/lib/evaluator.ts";
 import type { AttackRun, MuseReplay } from "@/lib/attacks.ts";
+import type { RoutePreview } from "@/lib/orchestrator.ts";
 import { Owl, type OwlMood } from "./owl";
 import { Badge, TierBadge, buttonClass, cx, int, ms, usd } from "./ui";
 
@@ -51,11 +52,31 @@ export function Console({ live, provider, inboxes, initialPrompt }: { live: bool
   const [day, setDay] = useState(1);
   const [force, setForce] = useState(false);
   const [now, setNow] = useState(0);
+  const [preview, setPreview] = useState<RoutePreview | null>(null);
+  const [menu, setMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const nextId = useRef(1);
   const endRef = useRef<HTMLDivElement>(null);
   const busy = pending !== null;
 
   useEffect(() => { if (!pending) return; const t = setInterval(() => setNow(stamp()), 100); return () => clearInterval(t); }, [pending]);
+  // Ask the router what it would do with the draft (no model call, nothing runs). Re-asked after each turn,
+  // so the line flips to "free" the moment a skill is verified.
+  useEffect(() => {
+    const p = text.trim();
+    const t = setTimeout(() => {
+      if (p.length < 3) { setPreview(null); return; }
+      api<RoutePreview>("/api/preview", { prompt: p }).then(setPreview, () => setPreview(null));
+    }, 220);
+    return () => clearTimeout(t);
+  }, [text, turns.length]);
+  useEffect(() => {
+    if (!menu) return;
+    const close = (e: Event) => { if (e instanceof KeyboardEvent ? e.key === "Escape" : !menuRef.current?.contains(e.target as Node)) setMenu(false); };
+    document.addEventListener("pointerdown", close);
+    document.addEventListener("keydown", close);
+    return () => { document.removeEventListener("pointerdown", close); document.removeEventListener("keydown", close); };
+  }, [menu]);
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }); }, [turns, pending]);
 
   const push = (t: NewTurn) => setTurns((xs) => [...xs, { ...t, id: nextId.current++ } as Turn]);
@@ -130,35 +151,52 @@ export function Console({ live, provider, inboxes, initialPrompt }: { live: bool
 
   const send = () => { const p = text.trim(); if (p.length < 3 || busy) return; setText(""); void runTask(p); };
 
+  const pill = "flex h-9 items-center gap-1.5 whitespace-nowrap rounded-full border px-3 text-[13px] transition-colors";
+  const actions = [
+    { icon: GraduationCap, label: "See how Noctua learns", sub: "Thinks once, verifies a skill, then runs it free", run: graduate },
+    { icon: Store, label: "Muse Replay", sub: "Replay the Marketplace agent incident", run: museReplay },
+    { icon: ShieldAlert, label: "Attack Night", sub: "Throw 10 known attacks at the policy engine", run: attackNight },
+  ];
   const composer = (
-    <form onSubmit={(e) => { e.preventDefault(); send(); }} className="rounded-[28px] border border-line-strong bg-[#141414] p-2 shadow-[0_10px_40px_-12px_rgb(0_0_0/0.9)] focus-within:border-[#555]">
+    <form onSubmit={(e) => { e.preventDefault(); send(); }}
+      className="rounded-[24px] border border-white/[0.13] bg-[#262626] p-2.5 shadow-[inset_0_1px_0_rgb(255_255_255/0.07),0_24px_60px_-24px_rgb(0_0_0/0.95)] transition-colors focus-within:border-white/25">
       <label htmlFor="ask" className="sr-only">Message Noctua</label>
       <textarea id="ask" value={text} onChange={(e) => setText(e.target.value)} rows={1} maxLength={1000} autoFocus
         onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
-        placeholder="Ask Noctua"
-        className="max-h-40 min-h-[48px] w-full resize-none bg-transparent px-3.5 py-3 text-[16px] text-ink placeholder:text-muted focus:outline-none focus-visible:outline-none" />
-      <div className="flex flex-wrap items-center gap-1.5 px-1 pb-0.5">
-        <div role="radiogroup" aria-label="Sample inbox day" className="flex rounded-full border border-line p-0.5">
-          {inboxes.map((i) => (
-            <button type="button" key={i.day} role="radio" aria-checked={day === i.day} onClick={() => setDay(i.day)}
-              className={cx("whitespace-nowrap rounded-full px-2.5 py-1 text-[12.5px] transition-colors", day === i.day ? "bg-white text-black" : "text-muted hover:text-ink")}>
-              Day {i.day}
-            </button>
-          ))}
+        placeholder="Ask Noctua anything"
+        className="max-h-40 min-h-[48px] w-full resize-none bg-transparent px-2.5 py-2.5 text-[16px] text-ink placeholder:text-[#9a9a9a] focus:outline-none focus-visible:outline-none" />
+      {text.trim().length >= 3 && (preview || force) && <RouteLine preview={preview} force={force} live={live} />}
+      <div className="flex items-center gap-2">
+        <div ref={menuRef} className="relative">
+          <button type="button" onClick={() => setMenu(!menu)} aria-expanded={menu} aria-haspopup="menu" aria-label="More actions" disabled={busy}
+            className={cx("grid size-9 place-items-center rounded-full border border-white/15 text-ink-2 transition-[background-color,transform] hover:bg-white/10 disabled:opacity-40", menu && "rotate-45 bg-white/10")}>
+            <Plus size={18} aria-hidden />
+          </button>
+          {menu && (
+            <div role="menu" className="rise absolute bottom-12 left-0 z-30 w-[300px] rounded-2xl border border-white/[0.13] bg-[#262626] p-1.5 shadow-[0_24px_60px_-12px_rgb(0_0_0/0.95)]">
+              {actions.map(({ icon: Icon, label, sub, run }) => (
+                <button key={label} type="button" role="menuitem" onClick={() => { setMenu(false); void run(); }}
+                  className="flex w-full items-start gap-3 rounded-xl px-3 py-2.5 text-left hover:bg-white/[0.07]">
+                  <Icon size={17} className="mt-0.5 shrink-0 text-ink-2" aria-hidden />
+                  <span><span className="block text-[14px] text-ink">{label}</span><span className="block text-[12.5px] text-[#9a9a9a]">{sub}</span></span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
+        <label className={cx(pill, "relative cursor-pointer border-white/15 text-ink-2 hover:bg-white/10")} title="Which sample inbox Noctua works on">
+          <Inbox size={15} aria-hidden />Day {day}<span className="hidden text-[#9a9a9a] sm:inline">· {inboxes.find((i) => i.day === day)?.count ?? 0} emails</span><ChevronDown size={14} aria-hidden />
+          <select value={day} onChange={(e) => setDay(Number(e.target.value))} aria-label="Sample inbox day" className="absolute inset-0 cursor-pointer opacity-0 [color-scheme:dark]">
+            {inboxes.map((i) => <option key={i.day} value={i.day}>Day {i.day} · {i.count} emails</option>)}
+          </select>
+        </label>
         <button type="button" aria-pressed={force} onClick={() => setForce(!force)} title="Skip learned skills and reason from scratch"
-          className={cx("whitespace-nowrap rounded-full border px-3 py-1 text-[12.5px] transition-colors", force ? "border-white bg-white text-black" : "border-line text-muted hover:text-ink")}>
-          Think from scratch
+          className={cx(pill, force ? "border-white bg-white text-black" : "border-white/15 text-ink-2 hover:bg-white/10")}>
+          <Lightbulb size={15} aria-hidden /><span className="hidden sm:inline">Think from scratch</span>
         </button>
-        <button type="button" onClick={() => void museReplay()} disabled={busy} className="whitespace-nowrap rounded-full border border-line px-3 py-1 text-[12.5px] text-muted hover:text-ink disabled:opacity-40">
-          Muse Replay
-        </button>
-        <button type="button" onClick={() => void attackNight()} disabled={busy} className="hidden whitespace-nowrap rounded-full border border-line px-3 py-1 text-[12.5px] text-muted hover:text-ink disabled:opacity-40 sm:inline-block">
-          Attack Night
-        </button>
-        <button type="submit" disabled={busy || text.trim().length < 3} aria-label="Send"
-          className="ml-auto grid size-9 place-items-center rounded-full bg-white text-black transition-opacity disabled:opacity-25">
-          {busy ? <Loader2 size={16} className="animate-spin" aria-hidden /> : <ArrowUp size={18} aria-hidden />}
+        <button type="submit" disabled={busy || text.trim().length < 3}
+          className="ml-auto flex h-9 items-center gap-1.5 rounded-full bg-white px-4 text-[13.5px] font-semibold text-black transition-[opacity,transform] active:scale-95 disabled:opacity-30">
+          {busy ? <Loader2 size={15} className="animate-spin" aria-hidden /> : <ArrowUp size={15} strokeWidth={2.5} aria-hidden />}{busy ? "Working" : "Send"}
         </button>
       </div>
     </form>
@@ -166,8 +204,9 @@ export function Console({ live, provider, inboxes, initialPrompt }: { live: bool
 
   if (turns.length === 0 && !busy) {
     return (
-      <div className="flex min-h-dvh flex-col items-center justify-center px-4 pb-24">
-        <div className="w-full max-w-[720px] rise">
+      <div className="relative flex min-h-dvh flex-col items-center justify-center px-4 pb-24">
+        <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_45%_at_50%_48%,rgb(255_255_255/0.055),transparent_70%)]" />
+        <div className="relative w-full max-w-[720px] rise">
           <div className="flex flex-col items-center text-center">
             <Owl size={92} mood="idle" />
             <h1 className="mt-4 text-[28px] font-medium tracking-[-0.02em] text-ink">What can I handle for you?</h1>
@@ -175,7 +214,7 @@ export function Console({ live, provider, inboxes, initialPrompt }: { live: bool
           <div className="mt-7">{composer}</div>
           <div className="mt-4 flex flex-wrap justify-center gap-2">
             {SUGGESTIONS.map((x) => (
-              <button key={x.label} onClick={() => setText(x.text)} className="rounded-full border border-line px-3.5 py-1.5 text-[13px] text-ink-2 transition-colors hover:border-line-strong hover:text-ink">{x.label}</button>
+              <button key={x.label} onClick={() => setText(x.text)} className="rounded-full border border-white/[0.12] bg-white/[0.03] px-3.5 py-1.5 text-[13px] text-ink-2 transition-colors hover:border-white/25 hover:bg-white/[0.07] hover:text-ink">{x.label}</button>
             ))}
             <button onClick={graduate} className="rounded-full bg-white px-3.5 py-1.5 text-[13px] font-medium text-black hover:bg-[#e5e5e5]">See how Noctua learns</button>
             <button onClick={museReplay} className="rounded-full bg-white px-3.5 py-1.5 text-[13px] font-medium text-black hover:bg-[#e5e5e5]">Run the Muse Replay</button>
@@ -219,6 +258,24 @@ export function Console({ live, provider, inboxes, initialPrompt }: { live: bool
 }
 
 // ---------------- Pieces ----------------
+
+/** One line under the draft: what will happen if you send it, decided by the real router and policy. */
+function RouteLine({ preview: p, force, live }: { preview: RoutePreview | null; force: boolean; live: boolean }) {
+  const thinker = live ? "Nemotron" : "labelled demo stand-ins";
+  const [tag, msg, strong] = force ? ["from scratch", `Skills skipped. Reasons it through with ${thinker}.`, false]
+    : !p ? ["", "", false]
+    : p.kind === "blocked" ? ["blocked", `${p.addresses.join(", ")} is not a trusted contact. Policy will refuse to send there.`, true]
+    : p.kind === "skill" ? [p.tier === "master" ? "free" : "skill", `Runs from verified skill “${p.name}” v${p.version}${p.tier === "master" ? " · 0 model calls · $0" : " · fewer model calls"}.`, true]
+    : p.kind === "act" ? ["asks first", `Plans with ${thinker}. Anything it sends waits for your approval.`, false]
+    : ["new", `New to Noctua. Reasons it through with ${thinker}, then it can learn it.`, false];
+  if (!tag) return null;
+  return (
+    <p key={tag} aria-live="polite" className="rise mx-1 mb-2.5 flex items-center gap-2.5 rounded-xl border border-white/10 bg-black/25 px-2.5 py-1.5 text-[12.5px] text-ink-2">
+      <span className={cx("shrink-0 rounded-full px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.14em]", strong ? "bg-white text-black" : "border border-line-strong text-ink-2")}>{tag}</span>
+      <span className="min-w-0 truncate">{msg}</span>
+    </p>
+  );
+}
 
 function UserBubble({ text, day }: { text: string; day: number }) {
   return (

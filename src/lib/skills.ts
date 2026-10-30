@@ -96,7 +96,7 @@ export function matchScore(prompt: string, examples: string[]): { overlap: numbe
   return best;
 }
 
-const IRREVERSIBLE_VERBS = /\b(send|forward|delete|remove|pay|transfer|publish|post)\b/i;
+export const IRREVERSIBLE_VERBS = /\b(send|forward|delete|remove|pay|transfer|publish|post)\b/i;
 
 export function findSkillFor(prompt: string): { skill: Skill; overlap: number; shared: number } | null {
   if (IRREVERSIBLE_VERBS.test(prompt)) return null; // skills never act; such requests always get full planning + policy
