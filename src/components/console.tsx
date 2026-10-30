@@ -279,7 +279,7 @@ export function Console({ live, provider, inboxes, initialPrompt }: { live: bool
             </p>
           </Bot>
         )}
-        <div ref={endRef} />
+        <div ref={endRef} className="scroll-mb-40" />
       </div>
       <div className="sticky bottom-0 z-20 bg-gradient-to-t from-black via-black to-transparent px-4 pb-4 pt-6">
         <div className="mx-auto max-w-[760px]">{composer(false)}<p className="mt-2 text-center text-[11.5px] text-muted">Sample inbox · irreversible actions always wait for your approval</p></div>
