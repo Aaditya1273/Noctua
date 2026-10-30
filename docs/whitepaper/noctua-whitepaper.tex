@@ -13,10 +13,10 @@
 \usepackage[font=small,labelfont=bf]{caption}
 \usepackage{microtype}
 \usepackage{float}
-\usepackage[section]{placeins}
 \setlist{itemsep=2pt,topsep=4pt}
 \emergencystretch=3em
-\raggedbottom
+\renewcommand{\topfraction}{0.9}\renewcommand{\bottomfraction}{0.8}\renewcommand{\textfraction}{0.07}\renewcommand{\floatpagefraction}{0.75}
+\setcounter{topnumber}{3}\setcounter{bottomnumber}{2}\setcounter{totalnumber}{5}
 \newcommand{\code}[1]{\texttt{#1}}
 \newcommand{\Allow}{\textsc{Allow}}
 \newcommand{\Ask}{\textsc{Approve}}
@@ -139,7 +139,7 @@ the model, an exhausted budget degrades to a labelled demo mode, and neither sur
 verified on; defending against a host-level adversary who controls the signing key or the database file; and real
 delivery of messages (the sample workspace writes approved sends to a local outbox).
 
-\begin{figure}[t]
+\begin{figure}[!htbp]
 \centering
 \begin{tikzpicture}[font=\footnotesize,
   box/.style={draw=ink!70, fill=shade, rounded corners=2pt, align=center, inner sep=4pt, text width=40mm, minimum height=10mm},
@@ -201,7 +201,7 @@ decided by the policy engine with the model's origin and taint attached. Irrever
 \code{approvals.status = 'approved'}; only the user's request to \code{/api/approvals/:id} sets it, and the approval
 is re-checked against the full rule set when consumed. Table~\ref{tab:authority} makes this explicit.
 
-\begin{table}[t]
+\begin{table}[!htbp]
 \centering\small
 \caption{Authority analysis. Each row is a component; each column an outcome it can produce. The last column is
 empty by construction: no component can turn a denial into an execution.}
@@ -303,7 +303,7 @@ the checks are for.
 
 \section{Skill Lifecycle}\label{sec:lifecycle}
 
-\begin{figure}[t]
+\begin{figure}[!htbp]
 \centering
 \begin{tikzpicture}[font=\small, node distance=11mm and 24mm,
   st/.style={draw=ink!70, fill=shade, rounded corners=6pt, minimum width=22mm, minimum height=8mm, align=center},
@@ -331,7 +331,36 @@ Three tiers describe how much of a task still needs the model: \emph{Apprentice}
 calls on the inbox task), \emph{Journeyman} (a verified skill classifies, the model drafts replies; one call) and
 \emph{Master} (a verified, signed, deterministic skill; zero calls). Figure~\ref{fig:life} shows the states. The
 design choice that matters is that \emph{verified} is the only state from which a skill runs, and that leaving it is
-automatic: demotion is triggered by the skill's own invariants on live input, not by a person noticing a bad answer.
+automatic: demotion is triggered by the skill's own invariants on live input, not by a person noticing a bad answer. Figure~\ref{fig:versions} shows the lifecycle as it actually ran during the live
+benchmark: three versions, two demotions, and every run accounted for by exactly one path.
+
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[font=\footnotesize, x=1.75cm, y=0.62cm]
+\foreach \r in {1,...,7} \node[text=ink!70] at (\r,4.1) {run \r};
+\foreach \r/\d in {1/1,2/1,3/2,4/1,5/2,6/3,7/3} \node[text=ink!50, font=\scriptsize] at (\r,3.55) {Day \d};
+\node[anchor=east] at (0.45,2.6) {Apprentice};
+\node[anchor=east] at (0.45,1.6) {skill v1};
+\node[anchor=east] at (0.45,0.6) {skill v2};
+\node[anchor=east] at (0.45,-0.4) {skill v3};
+\foreach \r in {1,3,6} {\fill[ink!25] (\r-0.42,2.25) rectangle (\r+0.42,2.95); \node at (\r,2.6) {2 calls};}
+\fill[ink] (1.55,1.25) rectangle (2.45,1.95); \node[text=white] at (2,1.6) {0 calls};
+\fill[ink] (3.55,0.25) rectangle (5.45,0.95); \node[text=white] at (4,0.6) {0 calls}; \node[text=white] at (5,0.6) {0 calls};
+\fill[ink] (6.55,-0.75) rectangle (7.45,-0.05); \node[text=white] at (7,-0.4) {0 calls};
+\node[draw=ink, fill=white, inner sep=1.5pt, font=\scriptsize] at (1.0,1.6) {10/10};
+\node[draw=ink, fill=white, inner sep=1.5pt, font=\scriptsize] at (3.0,0.6) {11/11};
+\node[draw=ink, fill=white, inner sep=1.5pt, font=\scriptsize] at (6.0,-0.4) {11/11};
+\node[font=\scriptsize, text=ink!70, anchor=west] at (2.47,1.6) {$\times$ demoted};
+\node[font=\scriptsize, text=ink!70, anchor=west] at (5.47,0.6) {$\times$ demoted};
+\draw[ink!20] (0.5,-0.95) -- (7.5,-0.95);
+\end{tikzpicture}
+\caption{The skill lifecycle as it ran in the live benchmark. Grey: the run reasoned on Nemotron (2 calls). Black: a
+verified skill served it (0 calls). Boxed: the checks each version passed when it was learned. A new inbox broke v1
+at run~3 and v2 at run~6; each time the task fell back to Nemotron in the same request, and the next version had to
+pass a regression replay of the inbox that broke its predecessor.}
+\label{fig:versions}
+\end{figure}
+
 
 \section{The Policy Engine}\label{sec:policy}
 
@@ -341,7 +370,7 @@ provenance. Provenance is a pair $(\mathit{kind},\mathit{taint})$, where \emph{k
 skill, tool\_output, system\} and \emph{taint} lists the untrusted sources (an inbox day, a web page) present in the
 context that produced the call.
 
-\begin{table}[t]
+\begin{table}[!htbp]
 \centering\small
 \caption{Policy rules, in evaluation order. Rules P13 and P14 sit before the recipient and budget checks and
 before approval consumption, so no approval can carry a home address or a below-floor price out of the system.}
@@ -380,7 +409,27 @@ P10.
 \paragraph{Irreversibility budget.} Separately from money, each irreversible tool has a risk cost --- \code{mail.send}~3,
 \code{mail.forward}~5, \code{marketplace.reply}~2, \code{data.delete}~8, \code{payment.transfer}~10 --- and a day
 admits $\sum\text{cost}\le R$ (default $R=10$). The budget is checked (P8) \emph{before} an approval is requested, so
-a flood of approval prompts cannot be used to wear the user down.
+a flood of approval prompts cannot be used to wear the user down. Figure~\ref{fig:risk} shows what a default day
+admits: at most three emails to a colleague, two forwards, or five Marketplace replies.
+
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[xbar, width=0.62\linewidth, height=4.4cm, bar width=8pt, xmin=0, xmax=11,
+  symbolic y coords={transfer,delete,forward,send,reply}, ytick=data,
+  yticklabels={\code{payment.transfer},\code{data.delete},\code{mail.forward},\code{mail.send},\code{marketplace.reply}},
+  yticklabel style={font=\footnotesize}, xlabel={risk points per action},
+  nodes near coords, nodes near coords style={font=\scriptsize, anchor=west}, point meta=explicit symbolic, axis lines*=left, enlarge y limits=0.15, clip=false]
+\addplot[fill=ink, draw=ink] coordinates {(10,transfer)[disabled (P6)] (8,delete)[disabled (P6)] (5,forward)[2 a day] (3,send)[3 a day] (2,reply)[5 a day]};
+\draw[ink!60, densely dashed, thick] ({axis cs:10,reply} |- {rel axis cs:0,0}) -- ({axis cs:10,reply} |- {rel axis cs:0,1}) node[above, font=\scriptsize, text=ink!70]{daily budget $R=10$};
+\end{axis}
+\end{tikzpicture}
+\caption{The irreversibility budget: risk points per action against the default daily balance, which is separate
+from money. The label is how many of that action alone a default day admits. The two most dangerous tools are
+disabled outright in the sample workspace.}
+\label{fig:risk}
+\end{figure}
+
 
 \paragraph{The two Muse rules.} P13 normalizes outgoing text and denies it if it contains the owner's address or
 matches a street-address pattern. P14 extracts dollar amounts from the outgoing text, ignoring sentences that decline
@@ -396,7 +445,7 @@ the trace. Resolution can only produce an address that already appears in the wo
 the failure each forecloses. A plan that fails gets exactly one repair attempt with the validation error appended;
 both calls are reserved, settled and shown on the receipt.
 
-\begin{table}[t]
+\begin{table}[!htbp]
 \centering\small
 \caption{Checks applied to a plan from the model, and the failure each forecloses. Failing twice ends the task
 without executing anything.}
@@ -464,7 +513,7 @@ each successful Apprentice run, and promotion only through the full evaluation. 
 counted in Noctua's arm. The live run used \code{nvidia/nemotron-3-super-120b-a12b} on Nebius Token Factory on 29
 October 2026, priced at \$0.30/\$0.90 per million input/output tokens.
 
-\begin{table}[t]
+\begin{table}[!htbp]
 \centering\small
 \caption{Live benchmark, Nebius Token Factory, 29 Oct 2026. ``Label accuracy'' counts category labels against the
 reference annotations; it does not score summaries or drafted replies.}
@@ -485,7 +534,7 @@ Attack Night & \multicolumn{2}{c}{10 / 10 stopped}\\
 \end{tabular}
 \end{table}
 
-\begin{figure}[t]
+\begin{figure}[!htbp]
 \centering
 \begin{tikzpicture}
 \begin{axis}[ybar, width=0.95\linewidth, height=5.2cm, bar width=9pt, ymin=0, ymax=3.6, ytick={0,1,2,3},
@@ -516,7 +565,7 @@ learned; both arms scored it the same way.
 and a deliberately weak prompt, and passes if nothing reaches the attacker whatever the model proposes; it is excluded
 from the 10/10 because its outcome depends on a live model call.
 
-\begin{table}[t]
+\begin{table}[!htbp]
 \centering\small
 \caption{Attack Night: the attack, and the component that stops it.}
 \label{tab:attacks}
@@ -576,7 +625,7 @@ is computed from them, and the model in Section~\ref{sec:drift} is checked again
 
 \subsection{Unit economics}
 
-\begin{table}[!htb]
+\begin{table}[!htbp]
 \centering\small
 \caption{Unit economics, measured. $\bar c_a$ is the mean of the seven baseline Apprentice runs; $c_s$ is the
 synthesis spend (total spend of Noctua's arm minus its task runs) divided by its three syntheses.}
@@ -600,7 +649,7 @@ Label accuracy, 95\% interval & 96\% [86.3\%, 99.5\%] & Clopper--Pearson on 48 /
 this interval is optimistic; it is shown to make the sample size visible, not to claim a general accuracy.}
 \end{table}
 
-\begin{figure}[!htb]
+\begin{figure}[!htbp]
 \centering
 \begin{tikzpicture}
 \begin{axis}[ybar, width=0.95\linewidth, height=5cm, bar width=8pt, ymin=0, ymax=12.5,
@@ -627,7 +676,7 @@ against \$0.00165), falls behind by \$0.000085 after the first demotion at run~3
 widest exactly where skills hold, and the two steps up in Noctua's curve are the two demotions: the cost of drift is
 visible in the curve, not hidden in an average.
 
-\begin{figure}[!htb]
+\begin{figure}[!htbp]
 \centering
 \begin{tikzpicture}
 \begin{axis}[width=0.9\linewidth, height=5.4cm, xmin=0.7, xmax=7.3, ymin=0, ymax=6.4, clip=false, xtick={1,...,7},
@@ -646,7 +695,7 @@ visible in the curve, not hidden in an average.
 \label{fig:cum}
 \end{figure}
 
-\begin{figure}[!htb]
+\begin{figure}[!htbp]
 \centering
 \begin{tikzpicture}
 \begin{axis}[ybar, width=0.95\linewidth, height=5cm, bar width=8pt, ymode=log, ymin=0.5, ymax=300000, log origin=infty,
@@ -672,7 +721,7 @@ spend (\$0.00071 of \$0.00095) and most of the time, because it reads every mess
 the plan is short. That is the step a Master skill replaces, which is why the Master tier removes not just a call but
 the expensive one.
 
-\begin{table}[!htb]
+\begin{table}[!htbp]
 \centering\small
 \caption{Every model call in the recorded session (30 Oct 2026), with its reservation. ``Reserved'' is the
 token count the accounting layer held before the call; ``headroom'' is reserved over actual.}
@@ -696,7 +745,7 @@ Session total & 9 calls & 4{,}558 & 2{,}118 & 14{,}474 & 2.17$\times$ & \$0.0032
 \end{tabular}
 \end{table}
 
-\begin{figure}[!htb]
+\begin{figure}[!htbp]
 \centering
 \begin{tikzpicture}
 \begin{axis}[ybar, width=0.95\linewidth, height=5cm, bar width=7pt, ymin=0, ymax=2700,
@@ -722,7 +771,7 @@ cost; a call is therefore refused while there is still real room under the cap, 
 $\lfloor B/\bar c_a\rfloor$ inbox runs a day; Noctua completes the same number of \emph{new} or demoted runs, plus
 any number of Master runs, which spend nothing and are not limited by $B$.
 
-\begin{table}[!htb]
+\begin{table}[!htbp]
 \centering\small
 \caption{Inbox runs per day under a dollar cap, at the measured $\bar c_a$.}
 \label{tab:cap}
@@ -758,7 +807,7 @@ the benchmark's drift rate the long-run saving is 44\%; at 10\% drift it is 83\%
 The break-even depends only on the ratio $c_s/\bar c_a$, so a cheaper synthesis --- or a skill that drifts less ---
 moves it in Noctua's favour.
 
-\begin{figure}[!htb]
+\begin{figure}[!htbp]
 \centering
 \begin{tikzpicture}
 \begin{axis}[width=0.40\linewidth, height=5.2cm, xmin=1, xmax=30, ymin=0, ymax=25, xlabel={runs $n$}, ylabel={$\mathbb{E}$[spend] ($\times10^{-3}$ \$)},
@@ -799,7 +848,7 @@ costs, extrapolated with the drift model above. These are not like-for-like: a s
 far broader capability, and Noctua's figure excludes hosting. The comparison is the one a user makes when deciding
 what a recurring chore should cost, and the axis is logarithmic because the gap is four to five orders of magnitude.
 
-\begin{figure}[!htb]
+\begin{figure}[!htbp]
 \centering
 \begin{tikzpicture}
 \begin{axis}[xbar, width=0.82\linewidth, height=5.6cm, bar width=9pt, xmode=log, xmin=0.0005, xmax=1000, log origin=infty,
@@ -816,7 +865,7 @@ product comparison: see the text.}
 \label{fig:month}
 \end{figure}
 
-\begin{figure}[!htb]
+\begin{figure}[!htbp]
 \centering
 \begin{tikzpicture}
 \begin{axis}[ybar, width=0.62\linewidth, height=4.6cm, bar width=12pt, ymin=0, ymax=110,

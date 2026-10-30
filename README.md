@@ -297,7 +297,7 @@ connection** to confirm the model IDs against your catalogue, or run `npm run sm
 
 > The full technical paper, with the formal definitions, the authority analysis, the evaluation and ten findings from
 > testing against the live model, is [docs/whitepaper/noctua-whitepaper.pdf](docs/whitepaper/noctua-whitepaper.pdf)
-> (20 pages: 10 figures, 8 tables, 11 equations; LaTeX source alongside).
+> (19 pages: 12 figures, 8 tables, 11 equations; LaTeX source alongside).
 
 ## 1. How a request flows
 
