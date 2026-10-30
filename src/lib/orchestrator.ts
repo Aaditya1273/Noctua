@@ -103,6 +103,12 @@ function enforceGuard(steps: Plan["steps"], s: ExecState): Plan["steps"] {
   const at = out.findIndex((st) => st.tool === "inbox.list");
   if (at >= 0) out.splice(at + 1, 0, { tool: "guard.injection_scan", args: {}, why: "Enforced by Noctua: screen untrusted content." });
   if (!steps.some((st) => st.tool === "guard.injection_scan") && at >= 0) note(s, "info", "planner", "Plan did not include the injection guard; Noctua inserted it (mandatory).");
+  // Triage always ends in a digest (deterministic, no model call), so the reply opens with its summary.
+  const tri = out.map((st) => st.tool).lastIndexOf("triage.llm");
+  if (tri >= 0 && !out.some((st) => st.tool === "digest.compose")) {
+    out.splice(tri + 1, 0, { tool: "digest.compose", args: {}, why: "Added by Noctua: summarise the triage." });
+    note(s, "info", "planner", "Plan did not compose a digest; Noctua added it (no model call).");
+  }
   return out;
 }
 

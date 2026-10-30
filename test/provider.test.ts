@@ -237,6 +237,7 @@ test("a garbled tool name in the plan gets one repair attempt instead of failing
     const t = getTask((await runTask({ prompt: PROMPT, day: 1, route: "auto" })).taskId)!;
     assert.equal(t.status, "done", t.error ?? "");
     assert.ok(t.usage.some((u) => u.purpose === "plan:repair"), "the repair call is on the receipt");
+    assert.match(t.result!.digest ?? "", /reviewed/, "a plan without digest.compose still ends in a digest");
   } finally {
     await mock.close();
   }
