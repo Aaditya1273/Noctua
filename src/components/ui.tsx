@@ -21,28 +21,57 @@ export function OwlMark({ size = 28 }: { size?: number }) {
   );
 }
 
-export function PageHeader({ title, lead, actions }: { title: string; lead?: ReactNode; actions?: ReactNode }) {
+/**
+ * The frame every product screen shares: a sticky app bar (breadcrumb title + actions) over a
+ * constrained content column, so pages read as parts of one application rather than web pages.
+ */
+export function PageHeader({ title, lead, actions, crumb, children }: { title: string; lead?: ReactNode; actions?: ReactNode; crumb?: { href: string; label: string }; children?: ReactNode }) {
   return (
-    <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-      <div className="max-w-2xl">
-        <h1 className="font-serif text-[2rem] leading-tight tracking-tight text-ink">{title}</h1>
-        {lead && <p className="mt-2 text-[15px] leading-relaxed text-muted">{lead}</p>}
+    <div className="min-h-full">
+      <header className="sticky top-0 z-20 border-b border-white/[0.07] bg-black/80 backdrop-blur-xl">
+        <div className="mx-auto flex min-h-14 max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 py-2.5 pl-16 pr-5 sm:pr-8 lg:pl-8">
+          <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-2 text-[14px]">
+            <Link href="/app" className="text-muted transition-colors hover:text-ink">Noctua</Link>
+            <span className="text-[#3a3a3a]" aria-hidden>/</span>
+            {crumb && <><Link href={crumb.href} className="text-muted transition-colors hover:text-ink">{crumb.label}</Link><span className="text-[#3a3a3a]" aria-hidden>/</span></>}
+            <h1 className="truncate font-semibold text-ink">{title}</h1>
+          </nav>
+          {actions && <div className="ml-auto flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
+        </div>
+      </header>
+      <div className="mx-auto max-w-6xl px-5 pb-16 pt-7 sm:px-8">
+        {lead && <p className="mb-6 max-w-2xl text-[14.5px] leading-6 text-muted">{lead}</p>}
+        {children}
       </div>
-      {actions && <div className="flex shrink-0 flex-wrap gap-2">{actions}</div>}
-    </header>
+    </div>
+  );
+}
+
+/** A row of key numbers with hairline dividers: the first thing each screen answers. */
+export function StatStrip({ items }: { items: { label: string; value: ReactNode; note?: ReactNode }[] }) {
+  return (
+    <dl className="mb-6 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.07] lg:grid-cols-4">
+      {items.map((s) => (
+        <div key={s.label} className="min-w-0 bg-[#0b0b0b] px-5 py-4">
+          <dt className="text-[12px] text-muted">{s.label}</dt>
+          <dd className="mt-1.5 truncate text-[26px] font-semibold leading-none tracking-[-0.02em] tabular-nums text-ink">{s.value}</dd>
+          {s.note && <dd className="mt-1.5 truncate text-[12px] text-muted">{s.note}</dd>}
+        </div>
+      ))}
+    </dl>
   );
 }
 
 export function Card({ children, className, as: Tag = "section" }: { children: ReactNode; className?: string; as?: "section" | "div" | "article" }) {
-  return <Tag className={cx("glass rounded-card", className)}>{children}</Tag>;
+  return <Tag className={cx("overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0b0b0b]", className)}>{children}</Tag>;
 }
 
 export function CardHeader({ title, meta, action }: { title: ReactNode; meta?: ReactNode; action?: ReactNode }) {
   return (
-    <div className="flex flex-wrap items-start justify-between gap-3 border-b border-line px-5 py-4">
+    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.07] bg-white/[0.015] px-5 py-3">
       <div className="min-w-0">
-        <h2 className="text-[15px] font-semibold text-ink">{title}</h2>
-        {meta && <p className="mt-0.5 text-[13px] text-muted">{meta}</p>}
+        <h2 className="text-[14px] font-semibold text-ink">{title}</h2>
+        {meta && <p className="mt-0.5 text-[12.5px] text-muted">{meta}</p>}
       </div>
       {action}
     </div>
@@ -126,9 +155,10 @@ export function Stat({ label, value, note, tone }: { label: string; value: React
 
 export function Empty({ title, children, action }: { title: string; children?: ReactNode; action?: ReactNode }) {
   return (
-    <div className="flex flex-col items-start gap-2 px-5 py-8">
-      <p className="text-[14px] font-medium text-ink">{title}</p>
-      {children && <p className="max-w-lg text-[13.5px] leading-relaxed text-muted">{children}</p>}
+    <div className="flex flex-col items-center gap-2 px-5 py-12 text-center">
+      <span className="mb-1 grid size-10 place-items-center rounded-full border border-white/10 text-muted"><CircleDashed size={18} aria-hidden /></span>
+      <p className="text-[14.5px] font-medium text-ink">{title}</p>
+      {children && <p className="max-w-md text-[13.5px] leading-relaxed text-muted">{children}</p>}
       {action && <div className="mt-2">{action}</div>}
     </div>
   );

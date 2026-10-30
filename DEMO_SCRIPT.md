@@ -17,7 +17,7 @@ mode, say "demo stand-in" where the receipt says so.
 | 2:40 | Tabs: Receipts | Show live badges and the by-path table | "NVIDIA Nemotron 3 Super via Nebius Token Factory, server-side, with real usage accounting. Reason once, verify, reuse." |
 
 Optional (if time): *"Review today's inbox and send a reply to Priya confirming Thursday works."* → the `mail.send`
-waits for approval → Approve → Security lab shows 3 risk points spent and the message in the **local outbox (not delivered)**.
+waits for approval → Approve → Security shows 3 risk points spent and the message in the **local outbox (not delivered)**.
 
 What not to claim on camera: real mailbox access, delivered email, Nebius Serverless/NemoClaw/OpenShell/Tavily usage,
 or cost savings unless the receipts on screen are from a live run.

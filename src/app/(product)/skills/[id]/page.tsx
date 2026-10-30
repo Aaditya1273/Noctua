@@ -25,13 +25,12 @@ export default async function SkillPage({ params }: PageProps<"/skills/[id]">) {
   const rules = (m.steps.find((s) => s.tool === "triage.rules")?.args as { rules?: { category: string; keywords: string[] }[] } | undefined)?.rules ?? [];
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-5 pb-16 pt-16 sm:px-8 lg:pt-10">
-      <PageHeader title={`${skill.name} · v${skill.version}`} lead={skill.description}
+    <PageHeader crumb={{ href: "/skills", label: "Skills" }} title={`${skill.name} · v${skill.version}`} lead={skill.description}
         actions={<>
           {(skill.state === "candidate") && <EvaluateButton skillId={skill.id} />}
           {skill.state === "verified" && <SkillStateButton skillId={skill.id} action="suspend" />}
           {["suspended", "demoted", "rejected"].includes(skill.state) && <SkillStateButton skillId={skill.id} action="reinstate" />}
-        </>} />
+        </>}>
       <div className="mb-6 flex flex-wrap items-center gap-2"><SkillStateBadge state={skill.state} /><TierBadge tier={skill.tier} /><span className="text-[13px] text-muted">Created {when(skill.createdAt)} · {skill.synthesis}</span></div>
 
       <div className="space-y-6">
@@ -158,6 +157,6 @@ export default async function SkillPage({ params }: PageProps<"/skills/[id]">) {
           </Card>
         )}
       </div>
-    </div>
+    </PageHeader>
   );
 }

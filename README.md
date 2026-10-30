@@ -104,7 +104,7 @@ cp .env.example .env.local
 npm run build && npm start
 ```
 
-Open **Memory & settings → Check connection**. This calls `GET /models` and shows whether each configured model ID is in your catalogue. To verify a real completion without the UI:
+Open **Memory → Check connection**. This calls `GET /models` and shows whether each configured model ID is in your catalogue. To verify a real completion without the UI:
 
 ```bash
 NEBIUS_API_KEY=... npm run smoke:live

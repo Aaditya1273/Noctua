@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AttackRunner } from "@/components/actions";
-import { Card, CardHeader, DecisionBadge, Empty, Mono, PageHeader, PassFail, Stat, when } from "@/components/ui";
+import { Card, CardHeader, DecisionBadge, Empty, Mono, PageHeader, PassFail, Stat, StatStrip, when } from "@/components/ui";
+import { todayCounts } from "@/lib/receipts.ts";
 import { getLimits } from "@/lib/accounting.ts";
 import { latestAttackRun } from "@/lib/attacks.ts";
 import { isLive } from "@/lib/config.ts";
@@ -8,7 +9,7 @@ import { riskRemaining, riskSpentToday } from "@/lib/policy.ts";
 import { listSecurityEvents, outbox } from "@/lib/receipts.ts";
 import { TOOLS } from "@/lib/tools.ts";
 
-export const metadata: Metadata = { title: "Security lab" };
+export const metadata: Metadata = { title: "Security" };
 
 const RULES = [
   ["P1", "Unknown tool", "Anything not in the registry is denied."],
@@ -32,13 +33,19 @@ export default function SecurityPage() {
   const limits = getLimits();
   const irreversible = Object.values(TOOLS).filter((t) => t.risk === "irreversible");
   return (
-    <div className="mx-auto w-full max-w-5xl px-5 pb-16 pt-16 sm:px-8 lg:pt-10">
-      <PageHeader title="Security lab" lead="Email, web pages, buyer messages and tool results are untrusted. Enforcement lives in a server-side policy engine that every tool call passes through — the model is never the security mechanism." actions={<AttackRunner live={isLive()} />} />
+    <PageHeader title="Security" lead="Emails, web pages and buyer messages are never trusted. Every action passes the policy engine first, not the model." actions={<AttackRunner live={isLive()} />}>
+
+      <StatStrip items={[
+        { label: "Attack Night", value: run ? `${run.passed}/${run.total}` : "—", note: run ? `last run ${when(run.createdAt)}` : "not run yet" },
+        { label: "Blocked today", value: todayCounts().blockedToday, note: "by the policy engine" },
+        { label: "Risk points left", value: `${riskRemaining()}/${limits.dailyRiskPoints}`, note: "for irreversible actions" },
+        { label: "Policy rules", value: RULES.length, note: "checked on every action" },
+      ]} />
 
       <Card className="mb-6">
         <CardHeader title="Attack Night" meta={run ? `Last run ${when(run.createdAt)} · deterministic adversarial fixtures against the real policy engine and evaluator` : "Not run yet. Results are only shown after the suite actually runs."}
           action={run && <PassFail passed={run.passed === run.total} label={`${run.passed}/${run.total} passed`} />} />
-        {!run ? <Empty title="No results yet.">Run the suite to test email injection, web-page overrides, poisoned tool output, risk-budget overflow, malformed calls, approval replay, skill tampering and skill-initiated actions.</Empty> : (
+        {!run ? <Empty title="No results yet">Press <em>Run Attack Night</em> to throw 10 known attacks at the policy engine.</Empty> : (
           <ul className="divide-y divide-line">
             {run.results.map((r) => (
               <li key={r.id} className="px-5 py-4">
@@ -112,6 +119,6 @@ export default function SecurityPage() {
           <ul className="divide-y divide-line">{sent.map((o) => <li key={o.id} className="px-5 py-3 text-[13px]"><p className="text-ink">To {o.recipient} · {o.subject}</p><p className="mt-0.5 text-muted">{o.body}</p><p className="mt-0.5 text-[12px] text-muted">{when(o.created_at)} · not delivered</p></li>)}</ul>
         )}
       </Card>
-    </div>
+    </PageHeader>
   );
 }

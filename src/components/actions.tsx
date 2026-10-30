@@ -130,14 +130,14 @@ export function AttackRunner({ live }: { live: boolean }) {
   const [includeLive, setIncludeLive] = useState(false);
   const { busy, error, run } = useAction();
   return (
-    <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+    <div className="flex flex-row-reverse items-center gap-3">
       <button className={buttonClass("primary")} disabled={busy} onClick={async () => {
         if (await run(() => api("/api/security/run", { includeLive }))) router.refresh();
       }}>{busy ? <Spinner /> : <Shield size={15} aria-hidden />} {busy ? "Running attacks…" : "Run Attack Night"}</button>
       {live && (
         <label className="flex items-center gap-2 text-[13px] text-ink-2">
           <input type="checkbox" checked={includeLive} onChange={(e) => setIncludeLive(e.target.checked)} className="accent-[var(--color-ink)]" />
-          Include the live-model test (1 model call, counts against budget)
+          + live model test (1 call)
         </label>
       )}
       <ErrorText error={error} />

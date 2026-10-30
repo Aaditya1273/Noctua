@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BudgetMeter } from "@/components/budget";
-import { ButtonLink, Card, CardHeader, Empty, PageHeader, StatusBadge, TierBadge, int, ms, usd, when } from "@/components/ui";
+import { ButtonLink, Card, CardHeader, Empty, PageHeader, StatStrip, StatusBadge, TierBadge, int, ms, usd, when } from "@/components/ui";
 import { budgetStatus } from "@/lib/accounting.ts";
 import { listTasks, priceComparison } from "@/lib/receipts.ts";
 
@@ -26,23 +26,19 @@ export default function ReceiptsPage() {
     };
   });
   return (
-    <div className="mx-auto w-full max-w-5xl px-5 pb-16 pt-16 sm:px-8 lg:pt-10">
-      <PageHeader title="Receipts" lead="Model spend is computed only from API-reported token usage and your configured prices. Missing values are shown as Unknown — never estimated into a number." />
+    <PageHeader title="Receipts" lead="What every run really cost, from the token counts the API reports. Nothing is estimated.">
+      <StatStrip items={[
+        { label: "First time", value: usd(price.perRun), note: "full reasoning, per run" },
+        { label: "Every repeat after learning", value: "$0", note: "no model call" },
+        { label: "Daily for a month, never learned", value: usd(price.monthlyIfNeverLearned, 3), note: "upper bound: 30 full runs" },
+        { label: `For reference: ${price.reference.product.split(" (")[0]}`, value: `$${price.reference.monthlyUsd.min}–${price.reference.monthlyUsd.max}`, note: "per month subscription" },
+      ]} />
+      <p className="-mt-3 mb-6 text-[12px] text-muted">Model spend only, {price.basis}; hosting not included. Not like-for-like: the subscription covers far more. Reference price from <a className="underline hover:text-ink" href={price.reference.source}>launch coverage</a>, checked {price.reference.checked}.</p>
+
       <Card className="mb-6"><CardHeader title="Today" meta={budget.monetaryCapNote} /><div className="px-5 py-5"><BudgetMeter budget={budget} /></div></Card>
 
       <Card className="mb-6">
-        <CardHeader title="What this costs" meta={`Model spend only, ${price.basis}. Hosting is not included.`} />
-        <dl className="grid gap-6 px-5 py-5 sm:grid-cols-2 lg:grid-cols-4">
-          <div><dt className="text-[12px] uppercase tracking-[0.06em] text-muted">First time (full reasoning)</dt><dd className="mt-1 text-[1.6rem] font-semibold tabular-nums">{usd(price.perRun)}</dd><dd className="mt-1 text-[12.5px] text-muted">per run</dd></div>
-          <div><dt className="text-[12px] uppercase tracking-[0.06em] text-muted">Every repeat after learning</dt><dd className="mt-1 text-[1.6rem] font-semibold tabular-nums">$0</dd><dd className="mt-1 text-[12.5px] text-muted">no model call</dd></div>
-          <div><dt className="text-[12px] uppercase tracking-[0.06em] text-muted">Daily for a month, never learned</dt><dd className="mt-1 text-[1.6rem] font-semibold tabular-nums">{usd(price.monthlyIfNeverLearned, 3)}</dd><dd className="mt-1 text-[12.5px] text-muted">upper bound: 30 full runs</dd></div>
-          <div><dt className="text-[12px] uppercase tracking-[0.06em] text-muted">For reference</dt><dd className="mt-1 text-[1.6rem] font-semibold tabular-nums">${price.reference.monthlyUsd.min}–{price.reference.monthlyUsd.max}</dd><dd className="mt-1 text-[12.5px] text-muted">{price.reference.product}, per month</dd></div>
-        </dl>
-        <p className="border-t border-line px-5 py-3 text-[12.5px] text-muted">Not a like-for-like comparison: the subscription includes hosted compute and far broader capabilities; ours is model cost for this sample task only. Reference price from <a className="underline hover:text-ink" href={price.reference.source}>published launch coverage</a>, checked {price.reference.checked}.</p>
-      </Card>
-
-      <Card className="mb-6">
-        <CardHeader title="By execution path" meta="Averages over completed tasks in this database. Apprentice rows are the baseline. Demo-mode runs contribute call counts only (their model steps were not performed)." />
+        <CardHeader title="By execution path" meta="Averages over completed tasks. Apprentice is the baseline; demo runs count calls only." />
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-left text-[13px]">
             <thead className="text-[12px] uppercase tracking-wide text-muted"><tr className="border-b border-line">{["Path", "Runs (live)", "Model calls / run", "Tokens / live run", "Model cost / live run", "Latency"].map((h) => <th key={h} className="px-5 py-2 font-medium">{h}</th>)}</tr></thead>
@@ -87,6 +83,6 @@ export default function ReceiptsPage() {
           </div>
         )}
       </Card>
-    </div>
+    </PageHeader>
   );
 }

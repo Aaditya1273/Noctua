@@ -1,20 +1,32 @@
 import type { Metadata } from "next";
 import { LimitsForm, MemoryManager, ModelCheck } from "@/components/actions";
-import { Card, CardHeader, Mono, Notice, PageHeader } from "@/components/ui";
+import { Card, CardHeader, Mono, Notice, PageHeader, StatStrip } from "@/components/ui";
 import { getLimits } from "@/lib/accounting.ts";
 import { getConfig, isLive, providerName } from "@/lib/config.ts";
 import { listMemories } from "@/lib/memory.ts";
 
-export const metadata: Metadata = { title: "Memory & settings" };
+export const metadata: Metadata = { title: "Memory" };
 
 export default function SettingsPage() {
   const cfg = getConfig();
   const live = isLive(cfg);
   const models = [...new Set([cfg.models.fast, cfg.models.reasoning])];
+  const limits = getLimits(cfg);
+  const mem = listMemories();
   return (
-    <div className="mx-auto w-full max-w-5xl px-5 pb-16 pt-16 sm:px-8 lg:pt-10">
-      <PageHeader title="Memory & settings" lead="Everything Noctua remembers is listed here and can be deleted. Budgets and limits are enforced on the server before every model call." />
+    <PageHeader title="Memory" lead="What Noctua remembers about you, and the limits it can never cross. You can delete anything.">
+      <StatStrip items={[
+        { label: "Mode", value: live ? "Live" : "Demo", note: live ? providerName(cfg) : "labelled stand-ins" },
+        { label: "Remembered", value: mem.length, note: `${mem.filter((m) => m.kind === "contact").length} trusted contacts` },
+        { label: "Model calls / day", value: limits.dailyModelCalls || "∞", note: "hard limit" },
+        { label: "Budget / day", value: `$${limits.dailyBudgetUsd}`, note: "checked before every call" },
+      ]} />
       <div className="space-y-6">
+        <Card>
+          <CardHeader title="Memory" meta="Only what you approve. Trusted contacts are the only addresses Noctua may send to." />
+          <MemoryManager memories={mem} />
+        </Card>
+
         <Card>
           <CardHeader title="Model provider" meta={`NVIDIA Nemotron models served by ${providerName(cfg)} (OpenAI-compatible API). Configured through environment variables; the key never reaches the browser.`} />
           <dl className="grid gap-x-8 gap-y-4 px-5 py-5 text-[13.5px] md:grid-cols-2">
@@ -32,13 +44,9 @@ export default function SettingsPage() {
 
         <Card>
           <CardHeader title="Daily limits" />
-          <LimitsForm limits={getLimits(cfg)} />
+          <LimitsForm limits={limits} />
         </Card>
 
-        <Card>
-          <CardHeader title="Memory" meta="User-approved only. VIP senders raise priority; trusted recipients are the only addresses the policy engine lets you send to; notes are given to the planner." />
-          <MemoryManager memories={listMemories()} />
-        </Card>
 
         <Card>
           <CardHeader title="What leaves this machine" />
@@ -50,6 +58,6 @@ export default function SettingsPage() {
           </ul>
         </Card>
       </div>
-    </div>
+    </PageHeader>
   );
 }

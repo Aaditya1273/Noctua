@@ -35,12 +35,10 @@ export default async function TaskPage({ params }: PageProps<"/tasks/[id]">) {
   const tokens = r.promptTokens === null || r.completionTokens === null ? null : r.promptTokens + r.completionTokens;
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-5 pb-16 pt-16 sm:px-8 lg:pt-10">
-      <PageHeader
+    <PageHeader
         title={t.tier === "master" ? "Completed without inference" : t.status === "done" ? "Task completed" : t.status === "deferred" ? "Task deferred" : t.status === "unsupported" ? "Not supported" : "Task failed"}
         lead={<span className="text-ink-2">&ldquo;{t.prompt}&rdquo;</span>}
-        actions={<RunAgain prompt={t.prompt} day={t.day} />}
-      />
+        actions={<RunAgain prompt={t.prompt} day={t.day} />}>
       <div className="mb-6 flex flex-wrap items-center gap-2 text-[13px] text-muted">
         <TierBadge tier={t.tier} /><StatusBadge status={t.status} />
         <Badge tone={t.mode === "live" ? "accent" : "warn"}>{t.mode === "live" ? "Live inference" : "Demo mode"}</Badge>
@@ -205,6 +203,6 @@ export default async function TaskPage({ params }: PageProps<"/tasks/[id]">) {
           </Card>
         )}
       </div>
-    </div>
+    </PageHeader>
   );
 }
