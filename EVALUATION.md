@@ -12,7 +12,7 @@ from `eval/results.json` (generated 2026-10-29, Node v26.5.0, live mode on Nebiu
 | Runs completed with no model call | 0 / 7 | **4 / 7** |
 | Tokens (in / out) | 8,527 / 3,450 | 5,329 / 2,621 |
 | Measured model spend | **$0.0057** | **$0.0040** (about 30% lower) |
-| Label accuracy vs. reference | 96.0% | 96.0% |
+| Label accuracy vs. reference (48 / 50) | 96.0% | 96.0% |
 | Urgent messages missed | 0 | 0 |
 | Attack Night | | **10 / 10** (now including the two Muse Replay cases) |
 
@@ -40,6 +40,20 @@ reported Marketplace incident (an agent accepted a $10 offer and shared the sell
 
 The demo-mode results from 2026-10-28 are kept below for reference.
 
+## What this does and does not show
+
+- **Measured:** category labels (urgent, needs a reply, routine, FYI, suspicious) against reference labels, urgent
+  recall, model calls, tokens and model spend per run, latency, fallbacks.
+- **Not measured:** the quality of summaries and drafted replies. On the Master path they are deterministic (each
+  message's first sentence; fixed reply templates), so they are simpler than the model's. The 30% saving is "the same
+  labels for less model spend", not "the whole inbox assistant at equal quality".
+- **Model spend only.** "$0" and "free" in this project mean zero inference cost for a verified skill's run; hosting,
+  storage and the database are not counted on either side.
+- **Scale.** 21 synthetic messages over 3 days plus a 10-message held-out golden set, all written and labelled by the
+  author, and one live run on one model configuration. The 96% is 48 of 50 labels across seven runs that replay those
+  same inboxes (Day 1 four times), so they are not independent examples. Treat this as a reproducible proof of
+  mechanism, not a general accuracy benchmark.
+
 ## What was measured
 
 **Benchmark (`npm run eval`).** The same task — *"Review today's inbox, identify the messages requiring attention,
@@ -54,10 +68,15 @@ summarize urgent items, and prepare suggested replies."* — is run seven times 
 Per run it records execution tier, model calls, demo stand-in model steps, tokens, cost, latency, fallbacks, and
 label accuracy against the human reference annotations. It also runs Attack Night.
 
-**Test suite (`npm test`).** 27 deterministic tests: lifecycle (promote, reject, demote, regression replay,
-signature tamper), policy (approvals, exact-args binding, untrusted recipients, risk budget), Attack Night, memory,
-and the live path against a local HTTP mock of the Token Factory protocol (usage, cost arithmetic, malformed output,
-timeout/retry, HTTP 500, unreachable host, call-limit deferral, monetary cap, missing pricing, missing usage).
+**Test suite (`npm test`).** 36 tests, none of which calls the real API:
+- 22 engine tests (`test/engine.test.ts`): lifecycle (promote, reject, demote, regression replay, signature tamper),
+  policy (approvals, exact-args binding, untrusted recipients, risk budget, P13 private data, P14 floor price with
+  refusals allowed), Attack Night, Muse Replay, memory, the route preview.
+- 14 provider-path tests (`test/provider.test.ts`) against a local HTTP mock of the Token Factory protocol: usage,
+  cost arithmetic, a model proposing exfiltration, malformed output with one repair, a garbled tool name in a plan,
+  timeout/retry, HTTP 500, unreachable host, budget fallback to demo mode, monetary cap, missing pricing, missing
+  usage, recipient resolution.
+- The live checks are separate: `npm run smoke:live` (one real completion) and `npm run eval` with a key.
 
 ## Results (demo mode, 2026-10-28)
 

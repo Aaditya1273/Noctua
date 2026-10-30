@@ -59,7 +59,7 @@ const out = (name: string, svg: string) => { fs.mkdirSync("docs/img", { recursiv
   const saved = 1 - r.noctua.totals.costUsd / r.baseline.totals.costUsd;
   b += `<text x="${W - 32}" y="46" fill="#fafafa" font-size="20" font-weight="700" text-anchor="end">${Math.round(saved * 100)}% less spend</text>`;
   b += `<text x="${W - 32}" y="70" fill="#8f8f8f" font-size="13" text-anchor="end">grey: re-reason every time · white: Noctua</text>`;
-  out("chart-totals.svg", frame(W, H, "Seven runs, start to finish", `Accuracy ${Math.round(r.noctua.accuracy * 100)}% on both paths, ${r.noctua.urgentMissed} urgent messages missed.`, b));
+  out("chart-totals.svg", frame(W, H, "Seven runs, start to finish", `Label accuracy ${Math.round(r.noctua.accuracy * 100)}% on both paths (48 of 50), ${r.noctua.urgentMissed} urgent messages missed. Model spend only.`, b));
 }
 
 // 3. Attack Night.

@@ -1,7 +1,7 @@
 <p align="center"><img src="docs/img/landing.png" alt="Noctua: reason once, then never again. A personal AI agent on NVIDIA Nemotron and Nebius Token Factory." width="100%"></p>
 
 <p align="center">
-  <b>The personal AI agent that learns your repeated tasks, then does them for free,<br>and can't be tricked into sending your stuff away.</b>
+  <b>The personal AI agent that learns your repeated tasks, then repeats them with zero model inference,<br>and can't be tricked into sending your stuff away.</b>
 </p>
 
 <p align="center">
@@ -60,7 +60,8 @@ Two things are true of almost every personal agent today:
 |---|---|
 | **Reason once** | A new task goes to Nemotron on Nebius Token Factory. The plan is schema-checked and every step runs through the policy engine. |
 | **Learn and prove it** | Noctua turns the run into a skill: data, not code. It must pass 10–11 checks (held-out labels, 100% urgent recall, attack containment, determinism) before it may run. Promoted skills are signed with Ed25519. |
-| **Then never again** | The same request now runs from the skill with **0 model calls and $0**. If the inbox drifts and the skill starts getting things wrong, runtime checks demote it and the task falls back to full reasoning. |
+| **Then never again** | The same request now runs from the skill with **0 model calls** (no inference cost; hosting still costs what hosting costs). If the inbox drifts and the skill starts getting things wrong, runtime checks demote it and the task falls back to full reasoning. |
+| **What a skill is, exactly** | Today, one task family: inbox triage. A skill is keyword classification rules plus deterministic steps (first-sentence summaries, template replies). It is not a general way to turn any AI task into a script: requests that need fresh judgement, or that would send something, always go to the model and the policy engine. |
 | **Can't be tricked** | Email, web and buyer text is data, never orders. Sending to anyone outside your contacts, leaking your address, or selling below your floor is refused by code, not by the model's judgement. |
 | **Shows its receipts** | Every run records model calls, tokens, cost and latency from the API's own usage numbers. Daily limits are checked before each call, and when they run out the app falls back to labelled demo mode instead of failing. |
 
@@ -79,7 +80,7 @@ forward. Sped up 3×.</sub>
 <img src="docs/img/gif/route-preview.gif" alt="Typing in the composer: BLOCKED for an outside address, FREE for a learned task, ASKS FIRST for a reply">
 <b>2 · Know before you send.</b><br>
 <sub>As you type, the line above the composer says what will happen, decided by the real router and policy with no model
-call: <b>BLOCKED</b> (outside address), <b>FREE</b> (verified skill, $0), <b>ASKS FIRST</b> (it would send something).</sub>
+call: <b>BLOCKED</b> (outside address), <b>FREE</b> (verified skill, 0 model calls), <b>ASKS FIRST</b> (it would send something).</sub>
 </td>
 </tr>
 <tr>
@@ -108,7 +109,7 @@ Each one opens into its full trace.</sub>
 <td width="50%" valign="top">
 <img src="docs/img/preview-blocked.png" alt="Composer showing BLOCKED: archive@exfil-drop.example is not a trusted contact">
 <img src="docs/img/preview-free.png" alt="Composer showing FREE: runs from verified skill Daily inbox triage v1, 0 model calls, $0">
-<sub>The same composer, before sending: an attacker's address is refused up front; a learned task is free.</sub>
+<sub>The same composer, before sending: an attacker's address is refused up front; a learned task needs no inference.</sub>
 </td>
 </tr>
 </table>
@@ -134,7 +135,7 @@ Each one opens into its full trace.</sub>
 <td width="50%" valign="top"><img src="docs/img/receipts.png" alt="Receipts page: first time $0.0007, every repeat $0, cost by execution path, history"><br><sub><b>Receipts.</b> Real cost per path, from API-reported token usage.</sub></td>
 </tr>
 <tr>
-<td width="50%" valign="top"><img src="docs/img/task-master.png" alt="Task receipt: completed without inference, Master path, 0 model calls, 2 ms"><br><sub><b>A free run.</b> Master path: 0 model calls, $0, 2 ms, compared with the measured first run.</sub></td>
+<td width="50%" valign="top"><img src="docs/img/task-master.png" alt="Task receipt: completed without inference, Master path, 0 model calls, 2 ms"><br><sub><b>A run with no inference.</b> Master path: 0 model calls, $0 model cost, 2 ms, compared with the measured first run.</sub></td>
 <td width="50%" valign="top"><img src="docs/img/task-apprentice.png" alt="Task receipt for a first run: the model calls, tokens, cost and the full trace"><br><sub><b>A first run.</b> Every model call, every tool call and every policy decision, in order.</sub></td>
 </tr>
 <tr>
@@ -168,7 +169,7 @@ included**. The charts are drawn from that file by [`scripts/charts.ts`](scripts
 | Model spend, 7 runs (learning included) | $0.0057 | **$0.0040** (30% less) |
 | Runs with zero inference | 0 of 7 | **4 of 7** |
 | Latency of a repeat run | 3.1–6.9 s | **1–2 ms** |
-| Accuracy vs. human labels | 96% | 96% |
+| Label accuracy vs. human labels (48 of 50) | 96% | 96% |
 | Urgent messages missed | 0 | 0 |
 
 **The safety net fired twice, on purpose.** The Day 2 inbox has an "URGENT: payroll file rejected by the bank" email the
@@ -177,14 +178,24 @@ task fell back to Nemotron (run 3). Day 3's "server room temperature alarm" did 
 re-learned a v2 and v3 that had to pass a regression replay of the inbox that broke the previous version. No urgent
 message was missed on either path.
 
-**How the gap grows.** The 30% covers only seven runs, three of which were spent learning. Each further repeat costs
-$0 on Noctua and about $0.0008 when re-reasoned (measured), so daily for a month the re-reasoning agent spends about
-$0.024 on this one task, and Noctua spends nothing after the skill is verified, for as long as it stays verified.
+**What this benchmark measures, and what it doesn't.** It scores the **category labels** (urgent, needs a reply,
+routine, FYI, suspicious) and urgent recall. It does not score the summaries or the drafted replies: on the free path
+those are deterministic (each message's first sentence; fixed reply templates), so they are simpler than the model's,
+and nothing here measures by how much. Read the 30% as "the same labels for 30% less model spend", not as "the whole
+inbox assistant, at equal quality, for less".
+
+**How the gap grows.** The 30% covers only seven runs, three of which were spent learning. Each further repeat needs
+no inference on Noctua and costs about $0.0008 in model spend when re-reasoned (measured), so daily for a month the
+re-reasoning agent spends about $0.024 in model calls on this one task, and Noctua's model spend stays at zero after the
+skill is verified, for as long as it stays verified. Hosting and storage are not included on either side.
 
 <p align="center"><img src="docs/img/chart-attacks.svg" width="100%" alt="Attack Night: 10 of 10 attacks stopped: email exfiltration, web override, tool output chaining, risk budget, malformed calls, approval replay, skill tampering, skill irreversible, Muse lowball, Muse address"></p>
 
-**Limits, stated plainly.** The sample workspace is synthetic: 3 days, 21 messages, plus a 10-message held-out golden
-set. Passing on it says nothing about real mail. Learned skills are keyword classifiers, cheap and auditable, which is
+**Limits, stated plainly.** This is a reproducible **proof of mechanism**, not a general accuracy benchmark. The sample
+workspace is synthetic and was written by the author, labels included: 3 days, 21 messages, plus a 10-message
+held-out golden set. The 96% is 48 of 50 labels across seven runs that replay those same inboxes (Day 1 four times),
+so they are not 50 independent examples, and it is one live run on one model configuration. Passing on it says
+nothing about real mail. Learned skills are keyword classifiers, cheap and auditable, which is
 also why they drift; the runtime checks exist to catch that. Full methodology: [EVALUATION.md](EVALUATION.md).
 
 ## For judges: three ways to check it
@@ -209,7 +220,7 @@ curl -s -X POST https://noctua-gkbv.onrender.com/api/preview \
 **3. Run it yourself, no key needed.**
 
 ```bash
-npm install && npm test        # 36 tests, including live-path tests against a local mock of the Token Factory API
+npm install && npm test        # 36 tests (22 engine, 14 provider-path against a local mock of the API); no key needed
 node scripts/charts.ts         # redraws the charts above from eval/results.json
 ```
 
@@ -459,13 +470,14 @@ Built from Next's `standalone` output. The SQLite database and signing key live 
 
 ```bash
 npm run typecheck && npm run lint
-npm test              # 36 tests
+npm test              # 36 tests: 22 engine (test/engine.test.ts), 14 provider-path (test/provider.test.ts)
 npm run eval          # writes eval/results.json (live if NEBIUS_API_KEY is set)
 node scripts/charts.ts
 npm run smoke:live    # one real completion; prints SKIPPED without a key
 ```
 
-The live-path tests start a real HTTP server that speaks the OpenAI-compatible protocol. They cover usage extraction,
+None of the 36 calls the real API; the only live check is `npm run smoke:live`, plus the benchmark when a key is set.
+The provider-path tests start a real HTTP server that speaks the OpenAI-compatible protocol. They cover usage extraction,
 cost arithmetic, a model proposing exfiltration, malformed output with one repair attempt, a garbled tool name in a
 plan, timeouts with bounded retries, HTTP 500, an unreachable host, budget fallback to demo mode, the monetary cap,
 missing pricing, missing usage and recipient resolution. The engine tests cover the policy rules, approvals, the skill
@@ -493,6 +505,7 @@ lifecycle, Attack Night, Muse Replay and the route preview.
 
 - The sample workspace is small (21 messages over 3 days, plus a 10-message golden set). Passing on it says nothing
   about real mail.
+- The benchmark scores labels, not summary or reply quality; free runs use first-sentence summaries and template replies.
 - Learned skills are keyword classifiers: cheap and auditable, and they drift. The runtime checks catch drift, but they
   are heuristics too.
 - Skill matching uses deterministic term overlap. Use **Think** in the composer to force full reasoning.

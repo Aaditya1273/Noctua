@@ -39,14 +39,20 @@ missed urgency; a failing skill demotes itself and the task falls back to full r
 
 A server-side policy engine checks every tool call. Email, web and tool content is untrusted; irreversible actions
 need explicit, argument-bound approval and spend a separate daily risk budget; skills can never act irreversibly.
-Attack Night runs eight adversarial cases against the real engine.
+Attack Night runs ten adversarial cases against the real engine.
+
+**Scope, precisely.** Today a skill covers one task family, inbox triage: learned keyword classification rules plus
+deterministic steps (first-sentence summaries, template replies). It is not a general way to turn any AI task into a
+script; requests that need fresh judgement, or that would send something, always go to the model and the policy engine.
 
 ## Technical implementation
 
 - Next.js 16 (App Router) + React 19 + Tailwind 4, TypeScript throughout; SQLite via Node's built-in `node:sqlite`.
 - Modules: provider client, accounting (atomic reserve/settle against daily call, token and USD limits), orchestrator,
   tool registry, policy engine, skill synthesis/execution, evaluator, Attack Night, signing, receipts.
-- 27 automated tests, including live-path tests against a local HTTP mock of the Token Factory protocol;
+- 36 automated tests: 22 engine tests (policy, approvals, skill lifecycle, Attack Night, Muse Replay, route preview) and
+  14 provider-path tests against a local HTTP mock of the Token Factory protocol. None calls the real API; the live
+  checks are `npm run smoke:live` and the benchmark;
   `npm run eval` writes a machine-readable baseline-vs-Noctua benchmark.
 
 ## NVIDIA model usage
@@ -66,14 +72,18 @@ is shown as Unknown and disables the monetary cap rather than guessing.
 
 - **Cheaper with use:** on an identical seven-run sequence Noctua made **9 model calls instead of 15** and spent
   **$0.0040 instead of $0.0057** (learning included), with **4 of 7 runs making no model call**. A full-reasoning run
-  costs about $0.0008; a graduated repeat costs $0.
+  costs about $0.0008 in model spend; a graduated repeat needs **zero inference** (hosting not counted on either side).
 - **Safe by construction:** **0 urgent messages missed**; both cases where a learned skill would have been wrong were
   caught and re-run with full reasoning. Attack Night: **10/10** blocked.
 - **The Muse Replay:** the reported Marketplace failure, replayed with synthetic data. The $10 lowball is blocked
   (P14 below-floor), the home address is blocked (P13 private-data), and Noctua's own reply waits for approval and goes
   out labelled "Sent by Noctua".
+- **What the benchmark measures:** the category labels (48 of 50 correct on both paths) and urgent recall. It does
+  not score summaries or drafted replies, which on the free path are deterministic (first sentences, templates). The
+  data is synthetic and author-written (21 messages + a 10-message golden set, one live run), so this is a
+  reproducible proof of mechanism, not a general accuracy benchmark.
 - **Honest price comparison** (in the app and on the landing page): model cost for this task is fractions of a cent per
-  first run and $0 per repeat. For reference, ChatGPT Pro, which dots requires, is $100–500 a month. That covers hosted
+  first run and zero inference per repeat. For reference, ChatGPT Pro, which dots requires, is $100–500 a month. That covers hosted
   compute and much more, so it is labelled as not like-for-like.
 
 ## Roadmap
