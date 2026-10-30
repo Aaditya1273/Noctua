@@ -16,7 +16,8 @@
   <a href="#same-job-different-agent">Comparison</a> ·
   <a href="#for-judges-three-ways-to-check-it">For judges</a> ·
   <a href="#deep-dive">Deep dive</a> ·
-  <a href="SECURITY.md">Security model</a>
+  <a href="SECURITY.md">Security model</a> ·
+  <a href="docs/whitepaper/noctua-whitepaper.pdf"><b>Whitepaper (PDF)</b></a>
 </p>
 
 <p align="center">
@@ -293,6 +294,10 @@ connection** to confirm the model IDs against your catalogue, or run `npm run sm
 ---
 
 # Deep dive
+
+> The full technical paper, with the formal definitions, the authority analysis, the evaluation and ten findings from
+> testing against the live model, is [docs/whitepaper/noctua-whitepaper.pdf](docs/whitepaper/noctua-whitepaper.pdf)
+> (14 pages, LaTeX source alongside).
 
 ## 1. How a request flows
 
