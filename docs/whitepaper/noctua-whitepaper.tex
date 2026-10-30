@@ -12,6 +12,8 @@
 \usepackage{enumitem}
 \usepackage[font=small,labelfont=bf]{caption}
 \usepackage{microtype}
+\usepackage{float}
+\usepackage[section]{placeins}
 \setlist{itemsep=2pt,topsep=4pt}
 \emergencystretch=3em
 \raggedbottom
@@ -56,7 +58,9 @@ benchmark on Nebius Token Factory over seven runs of the same task, Noctua made 
 1--2\,ms instead of 3.1--6.9\,s, and identical label accuracy (48 of 50) on both paths. Ten known attacks, including
 a replay of the publicly reported Meta Muse incident, were stopped by the engine. We state precisely what this
 measures (classification labels on a small synthetic workspace, one live run) and what it does not (the quality of
-summaries and drafted replies), and we report ten defects that only testing against the live model surfaced.
+summaries and drafted replies), and we report ten defects that only testing against the live model surfaced. A drift model built from the measured
+unit costs predicts the measured saving within 2.2 points and shows that Noctua stays cheaper than re-reasoning as
+long as fewer than 59\% of repeats demote.
 \end{abstract}
 
 \noindent\textbf{Keywords:} personal AI agents; graduated inference; skill learning; prompt injection; capability
@@ -105,6 +109,9 @@ instead of failure (Section~\ref{sec:budget}).
 \item \textbf{A pre-send route preview}: the router and policy predicates evaluated as a pure function, so the user
 sees whether a request will run from a skill, need approval, or be refused \emph{before} sending it
 (Section~\ref{sec:preview}).
+\item \textbf{A quantitative analysis} from measured unit costs: cumulative spend, latency, token use, reservation
+headroom, capacity under a cap, and a drift model that predicts the measured saving within 2.2 points and gives the
+break-even drift rate, $d^\ast\approx0.59$ (Section~\ref{sec:quant}).
 \item \textbf{A live evaluation} with per-run receipts, Attack Night (ten adversarial cases) and a replay of the Muse
 incident, reported with its limits, and ten integration findings that documentation-driven development would have
 shipped as silent failures (Sections~\ref{sec:eval}--\ref{sec:findings}).
@@ -559,6 +566,274 @@ arithmetic, a model proposing exfiltration, malformed output with one repair, a 
 bounded retries, HTTP~500, an unreachable host, budget fallback, the monetary cap, missing pricing, missing usage,
 recipient resolution). The live checks are separate: \code{npm run smoke:live} and the benchmark.
 
+\section{Quantitative Analysis}\label{sec:quant}
+
+This section derives everything that can be derived from the measured runs: where the money and the time go,
+how the saving accumulates, how sensitive it is to drift, how conservative the budget reservation is, and how the
+result compares with the always-on agents cited in Section~1. Every input is a measured value from
+\code{eval/results.json} (29 Oct 2026) or from the recorded session's \code{usage} table (30 Oct 2026); every output
+is computed from them, and the model in Section~\ref{sec:drift} is checked against the measurement before it is used.
+
+\subsection{Unit economics}
+
+\begin{table}[!htb]
+\centering\small
+\caption{Unit economics, measured. $\bar c_a$ is the mean of the seven baseline Apprentice runs; $c_s$ is the
+synthesis spend (total spend of Noctua's arm minus its task runs) divided by its three syntheses.}
+\label{tab:unit}
+\begin{tabular}{lrl}
+\toprule
+Quantity & Value & Derivation\\
+\midrule
+Apprentice run, mean cost $\bar c_a$ & \$0.000809 & \$0.005663 / 7 runs\\
+Skill synthesis, mean cost $c_s$ & \$0.000551 & (\$0.003958 $-$ \$0.002304) / 3\\
+Master run cost & \$0 & 0 model calls (4 of 4 Master runs)\\
+Tokens per label, baseline & 239.5 & 11{,}977 tokens / 50 labels\\
+Tokens per label, Noctua & 159.0 & 7{,}950 tokens / 50 labels ($-33.6\%$)\\
+Apprentice latency, median (mean) & 3{,}524\,ms (4{,}304\,ms) & 7 baseline runs\\
+Master latency, all runs & 1, 1, 1, 2\,ms & 4 Master runs\\
+Median speed-up of a repeat & $\approx 3{,}500\times$ & 3{,}524\,ms / 1\,ms\\
+Label accuracy, 95\% interval & 96\% [86.3\%, 99.5\%] & Clopper--Pearson on 48 / 50$^\dagger$\\
+\bottomrule
+\end{tabular}
+\\[2pt]{\footnotesize $^\dagger$The 50 labels come from seven runs over three inboxes and are not independent, so
+this interval is optimistic; it is shown to make the sample size visible, not to claim a general accuracy.}
+\end{table}
+
+\begin{figure}[!htb]
+\centering
+\begin{tikzpicture}
+\begin{axis}[ybar, width=0.95\linewidth, height=5cm, bar width=8pt, ymin=0, ymax=12.5,
+  symbolic x coords={1,2,3,4,5,6,7}, xtick=data, xticklabels={Run 1,Run 2,Run 3,Run 4,Run 5,Run 6,Run 7},
+  xticklabel style={font=\footnotesize}, ylabel={model spend ($\times10^{-4}$ \$)},
+  legend style={at={(0.5,1.03)}, anchor=south, legend columns=2, draw=none, font=\footnotesize, /tikz/every even column/.append style={column sep=14pt}},
+  legend image code/.code={\draw[#1] (0cm,-0.1cm) rectangle (0.3cm,0.12cm);},
+  nodes near coords, nodes near coords style={font=\tiny, rotate=90, anchor=west, /pgf/number format/.cd, fixed, precision=2}, enlarge x limits=0.08, axis lines*=left, ymax=14]
+\addplot[fill=mid!60, draw=mid] coordinates {(1,8.262) (2,8.271) (3,10.905) (4,9.189) (5,8.022) (6,6.153) (7,5.829)};
+\addplot[fill=ink, draw=ink] coordinates {(1,9.180) (2,0) (3,8.085) (4,0) (5,0) (6,5.775) (7,0)};
+\legend{Re-reason every time, Noctua (task runs only)}
+\end{axis}
+\end{tikzpicture}
+\caption{Model spend per run. Noctua's Apprentice runs cost about the same as the baseline's; its four Master runs
+cost nothing. Synthesis is added separately in Figure~\ref{fig:cum}.}
+\label{fig:percost}
+\end{figure}
+
+\subsection{How the saving accumulates}
+
+Figure~\ref{fig:cum} adds each synthesis to the run that triggered it. Noctua takes the lead after run~2 (\$0.00147
+against \$0.00165), falls behind by \$0.000085 after the first demotion at run~3 --- that run pays for a fallback
+\emph{and} a re-synthesis --- and leads from run~4 onwards, ending at \$0.00396 against \$0.00566. The gap is
+widest exactly where skills hold, and the two steps up in Noctua's curve are the two demotions: the cost of drift is
+visible in the curve, not hidden in an average.
+
+\begin{figure}[!htb]
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=0.9\linewidth, height=5.4cm, xmin=0.7, xmax=7.3, ymin=0, ymax=6.4, clip=false, xtick={1,...,7},
+  xlabel={run}, ylabel={cumulative spend ($\times10^{-3}$ \$)}, grid=major, grid style={ink!10},
+  legend style={at={(0.02,0.98)}, anchor=north west, draw=none, fill=white, font=\footnotesize}, axis lines*=left]
+\addplot[mid, very thick, mark=square*, mark options={fill=mid}] coordinates {(1,0.8262) (2,1.6533) (3,2.7438) (4,3.6627) (5,4.4649) (6,5.0802) (7,5.6631)};
+\addplot[ink, very thick, mark=*] coordinates {(1,1.4692) (2,1.4692) (3,2.8289) (4,2.8289) (5,2.8289) (6,3.9576) (7,3.9576)};
+\legend{Re-reason every time, Noctua (synthesis included)}
+\node[font=\scriptsize, anchor=north west] at (axis cs:3.05,2.75) {demotion 1};
+\node[font=\scriptsize, anchor=north west] at (axis cs:6.05,3.85) {demotion 2};
+\node[font=\scriptsize, anchor=west] at (axis cs:7.02,5.66) {\$5.66};
+\node[font=\scriptsize, anchor=west] at (axis cs:7.02,3.96) {\$3.96};
+\end{axis}
+\end{tikzpicture}
+\caption{Cumulative model spend over the seven runs, learning included. The final gap is 30.1\%.}
+\label{fig:cum}
+\end{figure}
+
+\begin{figure}[!htb]
+\centering
+\begin{tikzpicture}
+\begin{axis}[ybar, width=0.95\linewidth, height=5cm, bar width=8pt, ymode=log, ymin=0.5, ymax=300000, log origin=infty,
+  symbolic x coords={1,2,3,4,5,6,7}, xtick=data, xticklabels={Run 1,Run 2,Run 3,Run 4,Run 5,Run 6,Run 7},
+  xticklabel style={font=\footnotesize}, ylabel={latency (ms, log scale)},
+  legend style={at={(0.5,1.03)}, anchor=south, legend columns=2, draw=none, font=\footnotesize, /tikz/every even column/.append style={column sep=14pt}},
+  legend image code/.code={\draw[#1] (0cm,-0.1cm) rectangle (0.3cm,0.12cm);},
+  nodes near coords, nodes near coords style={font=\tiny, rotate=90, anchor=west}, point meta=explicit symbolic, enlarge x limits=0.08, axis lines*=left]
+\addplot[fill=mid!60, draw=mid] coordinates {(1,6885)[6885] (2,3524)[3524] (3,5075)[5075] (4,5123)[5123] (5,3226)[3226] (6,3234)[3234] (7,3061)[3061]};
+\addplot[fill=ink, draw=ink] coordinates {(1,3603)[3603] (2,1)[1] (3,4270)[4270] (4,1)[1] (5,1)[1] (6,2608)[2608] (7,2)[2]};
+\legend{Re-reason every time, Noctua}
+\end{axis}
+\end{tikzpicture}
+\caption{End-to-end latency per run on a logarithmic axis. A Master run finishes in 1--2\,ms; every Apprentice run
+takes seconds because it waits on two model calls.}
+\label{fig:lat}
+\end{figure}
+
+\subsection{Where a first run's money and time go}
+
+The recorded session itemizes every call (Table~\ref{tab:calls}). On the inbox task, triage is three quarters of the
+spend (\$0.00071 of \$0.00095) and most of the time, because it reads every message and writes summaries and replies;
+the plan is short. That is the step a Master skill replaces, which is why the Master tier removes not just a call but
+the expensive one.
+
+\begin{table}[!htb]
+\centering\small
+\caption{Every model call in the recorded session (30 Oct 2026), with its reservation. ``Reserved'' is the
+token count the accounting layer held before the call; ``headroom'' is reserved over actual.}
+\label{tab:calls}
+\begin{tabular}{llrrrrr}
+\toprule
+Task & Purpose & In & Out & Reserved & Headroom & Cost\\
+\midrule
+Inbox triage, first run & plan & 527 & 92 & 1{,}440 & 2.33$\times$ & \$0.00024\\
+ & triage & 778 & 532 & 2{,}341 & 1.79$\times$ & \$0.00071\\
+Learn the workflow & synthesis & 392 & 268 & 1{,}644 & 2.49$\times$ & \$0.00036\\
+Forward to an outside address & plan & 522 & 102 & 1{,}423 & 2.28$\times$ & \$0.00025\\
+Reply to a colleague & plan & 522 & 209 & 1{,}426 & 1.95$\times$ & \$0.00034\\
+ & triage & 778 & 539 & 2{,}341 & 1.78$\times$ & \$0.00072\\
+ & draft & 334 & 217 & 1{,}846 & 3.35$\times$ & \$0.00030\\
+Marketplace listing & plan & 522 & 81 & 1{,}426 & 2.38$\times$ & \$0.00023\\
+ & draft & 183 & 78 & 587 & 2.25$\times$ & \$0.00013\\
+\midrule
+Session total & 9 calls & 4{,}558 & 2{,}118 & 14{,}474 & 2.17$\times$ & \$0.00327\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[!htb]
+\centering
+\begin{tikzpicture}
+\begin{axis}[ybar, width=0.95\linewidth, height=5cm, bar width=7pt, ymin=0, ymax=2700,
+  symbolic x coords={a,b,c,d,e,f,g,h,i}, xtick=data,
+  xticklabels={plan,triage,synth.,plan,plan,triage,draft,plan,draft},
+  xticklabel style={font=\scriptsize}, ylabel={tokens},
+  legend style={at={(0.5,1.03)}, anchor=south, legend columns=2, draw=none, font=\footnotesize, /tikz/every even column/.append style={column sep=14pt}},
+  legend image code/.code={\draw[#1] (0cm,-0.1cm) rectangle (0.3cm,0.12cm);},
+  enlarge x limits=0.06, axis lines*=left]
+\addplot[fill=white, draw=ink] coordinates {(a,1440) (b,2341) (c,1644) (d,1423) (e,1426) (f,2341) (g,1846) (h,1426) (i,587)};
+\addplot[fill=ink, draw=ink] coordinates {(a,619) (b,1310) (c,660) (d,624) (e,731) (f,1317) (g,551) (h,603) (i,261)};
+\legend{reserved before the call, used (reported by the API)}
+\end{axis}
+\end{tikzpicture}
+\caption{Reservation against actual usage for each call of the session. The estimate
+$\lceil\text{chars}/3.5\rceil+\text{max\_out}$ never under-reserved: headroom is 1.78--3.35$\times$ in tokens.
+Because every reserved token is priced at the output rate, the dollar reservation is 4.2--6.3$\times$ the settled
+cost; a call is therefore refused while there is still real room under the cap, never admitted when there is not.}
+\label{fig:reserve}
+\end{figure}
+
+\paragraph{Capacity under a cap.} With a daily dollar cap $B$, the re-reasoning agent can complete at most
+$\lfloor B/\bar c_a\rfloor$ inbox runs a day; Noctua completes the same number of \emph{new} or demoted runs, plus
+any number of Master runs, which spend nothing and are not limited by $B$.
+
+\begin{table}[!htb]
+\centering\small
+\caption{Inbox runs per day under a dollar cap, at the measured $\bar c_a$.}
+\label{tab:cap}
+\begin{tabular}{lrrr}
+\toprule
+Cap $B$ & Context & Re-reason every time & Noctua, Master runs\\
+\midrule
+\$0.03 & public demo (Render) & 37 & unlimited by $B$\\
+\$0.20 & local default in this repository & 247 & unlimited by $B$\\
+\$0.50 & \code{.env.example} default & 618 & unlimited by $B$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Sensitivity to drift}\label{sec:drift}
+
+Skills demote when their input drifts, and every demotion costs a fallback run and a re-synthesis. Let $d$ be the
+fraction of repeats that demote. Over $n$ runs of one task, with the first run always on the Apprentice path,
+\begin{equation}
+\mathbb{E}[C_\text{Noctua}(n)]=(\bar c_a+c_s)\,\bigl(1+(n-1)\,d\bigr),\qquad C_\text{base}(n)=n\,\bar c_a,
+\end{equation}
+so the fraction of model spend saved is
+\begin{equation}
+S(n,d)=1-\frac{(\bar c_a+c_s)(1+(n-1)d)}{n\,\bar c_a}\ \xrightarrow{\;n\to\infty\;}\ 1-\frac{d}{d^\ast},
+\qquad d^\ast=\frac{\bar c_a}{\bar c_a+c_s}=0.595 .
+\end{equation}
+\emph{Validation.} The benchmark demoted on 2 of its 6 repeats ($d=1/3$). The model predicts
+$S(7,\tfrac13)=27.9\%$; the measured saving is 30.1\%. The model is within 2.2 points of the measurement, so we use it
+to extrapolate, and we label the extrapolations as such.
+
+\emph{Reading.} Noctua's model spend stays below re-reasoning as long as fewer than about 59\% of repeats demote. At
+the benchmark's drift rate the long-run saving is 44\%; at 10\% drift it is 83\%; with no drift it approaches 100\%.
+The break-even depends only on the ratio $c_s/\bar c_a$, so a cheaper synthesis --- or a skill that drifts less ---
+moves it in Noctua's favour.
+
+\begin{figure}[!htb]
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=0.40\linewidth, height=5.2cm, xmin=1, xmax=30, ymin=0, ymax=25, xlabel={runs $n$}, ylabel={$\mathbb{E}$[spend] ($\times10^{-3}$ \$)},
+  grid=major, grid style={ink!10}, legend style={at={(0.5,-0.32)}, anchor=north, legend columns=3, draw=none, font=\scriptsize, /tikz/every even column/.append style={column sep=6pt}}, axis lines*=left, samples at={1,...,30}]
+\addplot[mid, very thick] {0.80943*x}; \addlegendentry{re-reason}
+\addplot[ink, very thick, dashed] {1.36021*(1+(x-1)*0.5)}; \addlegendentry{$d=0.5$}
+\addplot[ink, very thick] {1.36021*(1+(x-1)*0.3333)}; \addlegendentry{$d=1/3$ (observed)}
+\addplot[ink, thick, densely dotted] {1.36021*(1+(x-1)*0.1)}; \addlegendentry{$d=0.1$}
+\addplot[ink!50, thick] {1.36021}; \addlegendentry{$d=0$}
+\end{axis}
+\end{tikzpicture}\hspace{4mm}%
+\begin{tikzpicture}
+\begin{axis}[width=0.40\linewidth, height=5.2cm, xmin=0, xmax=0.8, ymin=-0.4, ymax=1, xlabel={drift $d$}, ylabel={saving $S(n,d)$},
+  grid=major, grid style={ink!10}, legend style={at={(0.5,-0.32)}, anchor=north, legend columns=3, draw=none, font=\scriptsize, /tikz/every even column/.append style={column sep=6pt}}, axis lines*=left, domain=0:0.8, samples=40,
+  ytick={-0.4,-0.2,0,0.2,0.4,0.6,0.8,1}, yticklabels={$-40\%$,$-20\%$,0\%,20\%,40\%,60\%,80\%,100\%}]
+\addplot[ink!50, thick] {1-1.36021*(1+6*x)/(7*0.80943)}; \addlegendentry{$n=7$}
+\addplot[ink, thick, dashed] {1-1.36021*(1+29*x)/(30*0.80943)}; \addlegendentry{$n=30$}
+\addplot[ink, very thick] {1-x/0.5948}; \addlegendentry{long run}
+\addplot[only marks, mark=*, mark size=2.5pt, ink, forget plot] coordinates {(0.3333,0.301)};
+\draw[ink!40, densely dashed] (axis cs:0.5948,-0.4) -- (axis cs:0.5948,1);
+\draw[ink!40] (axis cs:0,0) -- (axis cs:0.8,0);
+\node[font=\scriptsize, anchor=south west] at (axis cs:0.34,0.31) {measured, 30.1\%};
+\node[font=\scriptsize, anchor=north west, rotate=90] at (axis cs:0.61,-0.35) {$d^\ast=0.595$};
+\end{axis}
+\end{tikzpicture}
+\caption{Left: expected cumulative model spend for one daily task, extrapolated from measured unit costs at several
+drift rates. Right: the saving as a function of drift. The dot is the benchmark's measured saving at its observed
+drift; the model curve for $n=7$ passes within 2.2 points of it. Above $d^\ast$ a skill demotes too often to pay for
+itself.}
+\label{fig:drift}
+\end{figure}
+
+\subsection{The same task, priced across agents}
+
+Figure~\ref{fig:month} prices one daily inbox triage for 30 days. For the subscription agents the figure is the
+cheapest plan that includes the agent~\cite{dots,beam,ayauto}; for Nemotron it is model spend at the measured unit
+costs, extrapolated with the drift model above. These are not like-for-like: a subscription buys hosted compute and
+far broader capability, and Noctua's figure excludes hosting. The comparison is the one a user makes when deciding
+what a recurring chore should cost, and the axis is logarithmic because the gap is four to five orders of magnitude.
+
+\begin{figure}[!htb]
+\centering
+\begin{tikzpicture}
+\begin{axis}[xbar, width=0.82\linewidth, height=5.6cm, bar width=9pt, xmode=log, xmin=0.0005, xmax=1000, log origin=infty,
+  symbolic y coords={n0,n3,rr,gb,od}, ytick=data,
+  yticklabels={{Noctua, no drift (model)},{Noctua, $d=1/3$ (model)},{Re-reason on Nemotron},{xAI Grok Bot (plan)},{OpenAI dots (plan)}},
+  yticklabel style={font=\footnotesize, align=right}, xlabel={US dollars for 30 days (log scale)},
+  nodes near coords, nodes near coords style={font=\scriptsize, anchor=west}, point meta=explicit symbolic, axis lines*=left, enlarge y limits=0.15]
+\addplot[fill=ink, draw=ink] coordinates {(0.00136,n0)[\$0.0014] (0.01451,n3)[\$0.015] (0.02427,rr)[\$0.024] (30,gb)[from \$30] (100,od)[from \$100]};
+\end{axis}
+\end{tikzpicture}
+\caption{One daily inbox triage for 30 days. Subscription prices are the cheapest plan that includes each agent, as
+published; Nemotron figures are model spend on Nebius Token Factory at measured unit costs. Not a like-for-like
+product comparison: see the text.}
+\label{fig:month}
+\end{figure}
+
+\begin{figure}[!htb]
+\centering
+\begin{tikzpicture}
+\begin{axis}[ybar, width=0.62\linewidth, height=4.6cm, bar width=12pt, ymin=0, ymax=110,
+  symbolic x coords={Day 1,Day 2,Day 3}, xtick=data, ylabel={label accuracy (\%)},
+  legend style={at={(1.02,0.5)}, anchor=west, draw=none, font=\scriptsize}, legend image code/.code={\draw[#1] (0cm,-0.1cm) rectangle (0.3cm,0.12cm);},
+  nodes near coords, nodes near coords style={font=\tiny}, enlarge x limits=0.25, axis lines*=left]
+\addplot[fill=mid!60, draw=mid] coordinates {(Day 1,100) (Day 2,100) (Day 3,80)};
+\addplot[fill=ink, draw=ink] coordinates {(Day 1,100) (Day 2,100) (Day 3,80)};
+\legend{re-reason, Noctua}
+\end{axis}
+\end{tikzpicture}
+\caption{Label accuracy by inbox day, both arms (Day~1: 24 of 24 labels over three runs; Day~2: 16 of 16; Day~3: 8 of
+10). The Day~3 miss is the live model's own label on one message, which the skill learned, so the arms agree
+exactly. Summaries and replies are not scored.}
+\label{fig:acc}
+\end{figure}
+
 \section{Findings from Testing Against the Live Model}\label{sec:findings}
 
 Every integration was verified against Nebius Token Factory rather than against documentation, and each of the
@@ -651,7 +926,7 @@ model can --- reason through a new task and propose how to repeat it --- and Noc
 verified, signed artifact that repeats without inference and steps aside the moment it stops being right. Every
 action, from the model or from a skill, passes a policy engine that the model cannot argue with. We measured what we
 claim and said what we did not measure: 9 calls instead of 15, 4 of 7 runs with no inference, the same labels, ten
-attacks stopped, and ten defects that only the live model revealed.
+attacks stopped, a saving that holds until 59\% of repeats drift, and ten defects that only the live model revealed.
 
 \begin{thebibliography}{99}\small
 \bibitem{fortune} W.~Grantham-Philips and The Associated Press. \emph{An AI agent sent a stranger to a man's house without telling him --- and exposed the privacy risks of AI assistants.} Fortune, 19 Oct 2026.
