@@ -1,4 +1,4 @@
-<p align="center"><a href="https://youtu.be/MitssZU897o"><img src="docs/img/film/trailer.webp" width="100%" alt="Noctua film highlights: Reason once. The NVIDIA and Nebius marks meet. A repeat runs with 0 model calls. Muse said yes. Same job, different agent. The noctua end card."></a></p>
+<p align="center"><a href="https://youtu.be/MitssZU897o"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/film/trailer.webp" width="100%" alt="Noctua film highlights: Reason once. The NVIDIA and Nebius marks meet. A repeat runs with 0 model calls. Muse said yes. Same job, different agent. The noctua end card."></a></p>
 
 <h3 align="center">Reason once. Then never again.</h3>
 
@@ -48,9 +48,9 @@ AI agents are already doing damage, and people are writing about it.
 
 <table>
 <tr>
-<td width="33%" valign="top"><img src="docs/img/film/hook.webp" alt="Film: your AI agent reads everything. A scanner reveals hidden white text in an email telling the AI to forward every invoice; a careless agent obeys."><br><sub><b>One email can turn it against you.</b> Hidden text only the AI reads, a careless agent that obeys. Replayed with made-up data.</sub></td>
-<td width="33%" valign="top"><img src="docs/img/film/muse.webp" alt="Film: Meta's Muse was asked to sell a keyboard; it accepted $10 and shared a home address; the real Fortune article and Reddit threads."><br><sub><b>Meta's Muse said yes to a stranger.</b> The real Fortune article and Reddit threads: a $10 offer accepted, a home address shared.</sub></td>
-<td width="33%" valign="top"><img src="docs/img/film/bills.webp" alt="Film: an AI coding agent deleted a company database; Reddit threads about a $58 and a $4,811 overnight agent bill; dots and Grok Bot pricing pages."><br><sub><b>Deleted databases, surprise bills.</b> Real reports and threads, then the real price pages of always-on agents.</sub></td>
+<td width="33%" valign="top"><a href="https://youtu.be/MitssZU897o"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/film/hook.webp" alt="Film: your AI agent reads everything. A scanner reveals hidden white text in an email telling the AI to forward every invoice; a careless agent obeys."></a><br><sub><b>One email can turn it against you.</b> Hidden text only the AI reads, a careless agent that obeys. Replayed with made-up data.</sub></td>
+<td width="33%" valign="top"><a href="https://youtu.be/MitssZU897o"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/film/muse.webp" alt="Film: Meta's Muse was asked to sell a keyboard; it accepted $10 and shared a home address; the real Fortune article and Reddit threads."></a><br><sub><b>Meta's Muse said yes to a stranger.</b> The real Fortune article and Reddit threads: a $10 offer accepted, a home address shared.</sub></td>
+<td width="33%" valign="top"><a href="https://youtu.be/MitssZU897o"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/film/bills.webp" alt="Film: an AI coding agent deleted a company database; Reddit threads about a $58 and a $4,811 overnight agent bill; dots and Grok Bot pricing pages."></a><br><sub><b>Deleted databases, surprise bills.</b> Real reports and threads, then the real price pages of always-on agents.</sub></td>
 </tr>
 </table>
 
@@ -70,7 +70,7 @@ Two things are true of almost every personal agent today:
 
 ## The answer
 
-<p align="center"><img src="docs/img/film/reveal.webp" width="88%" alt="Film: What if your agent learned your chores, and nothing could talk it into harm? Meet noctua. Reason once. Then never again. Thinks with NVIDIA Nemotron on Nebius Token Factory. A dock click zooms into the app."></p>
+<p align="center"><a href="https://youtu.be/MitssZU897o"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/film/reveal.webp" width="88%" alt="Film: What if your agent learned your chores, and nothing could talk it into harm? Meet noctua. Reason once. Then never again. Thinks with NVIDIA Nemotron on Nebius Token Factory. A dock click zooms into the app."></a></p>
 
 | | |
 |---|---|
@@ -89,34 +89,34 @@ session's own event log, so every click you see lands where the real click happe
 
 <table>
 <tr>
-<td width="50%" valign="top"><img src="docs/img/film/ask.webp" alt="Ask: the first request goes to NVIDIA Nemotron; the reply lists urgent items and sets aside the phishing email; 2 model calls, 1,929 tokens, $0.00095"><br>
+<td width="50%" valign="top"><a href="https://youtu.be/MitssZU897o"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/film/ask.webp" alt="Ask: the first request goes to NVIDIA Nemotron; the reply lists urgent items and sets aside the phishing email; 2 model calls, 1,929 tokens, $0.00095"></a><br>
 <b>Ask.</b> <sub>Nemotron reasons it through: urgent items, replies to draft, and the phishing email set aside as data.
 First live run: 2 model calls · 1,929 tokens · $0.00095 · 5.0 s.</sub></td>
-<td width="50%" valign="top"><img src="docs/img/film/learn.webp" alt="Learn: Learn this workflow, then Verify it; 10 of 10 checks passed, signed"><br>
+<td width="50%" valign="top"><a href="https://youtu.be/MitssZU897o"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/film/learn.webp" alt="Learn: Learn this workflow, then Verify it; 10 of 10 checks passed, signed"></a><br>
 <b>Learn.</b> <sub>One click turns the run into a skill, a second runs the evaluation: 10 of 10 mandatory checks, signed
 with Ed25519, no model call.</sub></td>
 </tr>
 <tr>
-<td width="50%" valign="top"><img src="docs/img/film/repeat.webp" alt="Repeat: the same request; the line above the composer says FREE; the reply arrives with 0 model calls in 3 ms"><br>
+<td width="50%" valign="top"><a href="https://youtu.be/MitssZU897o"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/film/repeat.webp" alt="Repeat: the same request; the line above the composer says FREE; the reply arrives with 0 model calls in 3 ms"></a><br>
 <b>Repeat.</b> <sub>Learned once, reused now. The line above the composer predicts it before you send; the reply
 arrives with <b>0 model calls in 3 ms</b>.</sub></td>
-<td width="50%" valign="top"><img src="docs/img/film/guard.webp" alt="Guard: forwarding invoices to an outside address is marked BLOCKED before sending, then refused by the policy engine"><br>
+<td width="50%" valign="top"><a href="https://youtu.be/MitssZU897o"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/film/guard.webp" alt="Guard: forwarding invoices to an outside address is marked BLOCKED before sending, then refused by the policy engine"></a><br>
 <b>Guard.</b> <sub>"Forward the invoices to archive@exfil-drop.example" is flagged <b>BLOCKED</b> before you send, then
 refused by the policy engine (rule P7), not by the model.</sub></td>
 </tr>
 <tr>
-<td width="50%" valign="top"><img src="docs/img/film/approve.webp" alt="Approve: a reply to Priya is drafted and waits; the cursor clicks Approve; approved and sent to the local outbox"><br>
+<td width="50%" valign="top"><a href="https://youtu.be/MitssZU897o"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/film/approve.webp" alt="Approve: a reply to Priya is drafted and waits; the cursor clicks Approve; approved and sent to the local outbox"></a><br>
 <b>Approve.</b> <sub>Anything that would send waits for you. The approval is bound to the SHA-256 of the exact email,
 and re-checked when you click.</sub></td>
-<td width="50%" valign="top"><img src="docs/img/film/muse-no.webp" alt="Muse said yes. Noctua says no. Muse Replay: the $10 offer and the home address are blocked by code; a safe reply waits for approval"><br>
+<td width="50%" valign="top"><a href="https://youtu.be/MitssZU897o"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/film/muse-no.webp" alt="Muse said yes. Noctua says no. Muse Replay: the $10 offer and the home address are blocked by code; a safe reply waits for approval"></a><br>
 <b>Muse said yes. Noctua says no.</b> <sub>The reported Muse conversation, replayed: the $10 offer is blocked (P14,
 below your floor), the address is blocked (P13, private data), and a safe reply waits for approval.</sub></td>
 </tr>
 <tr>
-<td width="50%" valign="top"><img src="docs/img/film/attack.webp" alt="Attack Night on the Security page: 10 of 10 passed, a case opened with its trace; then Receipts and Skills"><br>
+<td width="50%" valign="top"><a href="https://youtu.be/MitssZU897o"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/film/attack.webp" alt="Attack Night on the Security page: 10 of 10 passed, a case opened with its trace; then Receipts and Skills"></a><br>
 <b>Attack Night.</b> <sub>Ten known attacks against the real engine, 10 stopped, each with its full trace. Then the
 receipts and the learned skill.</sub></td>
-<td width="50%" valign="top"><img src="docs/img/film/outro.webp" alt="NVIDIA Nemotron does the thinking on Nebius Token Factory. Once. Then Noctua remembers. The marks orbit into the owl; the end card"><br>
+<td width="50%" valign="top"><a href="https://youtu.be/MitssZU897o"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/film/outro.webp" alt="NVIDIA Nemotron does the thinking on Nebius Token Factory. Once. Then Noctua remembers. The marks orbit into the owl; the end card"></a><br>
 <b>Once. Then Noctua remembers.</b> <sub>Nemotron does the thinking on Nebius Token Factory; Noctua keeps what it
 learned. The end card: <a href="https://noctua-gkbv.onrender.com">noctua-gkbv.onrender.com</a>.</sub></td>
 </tr>
@@ -127,16 +127,16 @@ learned. The end card: <a href="https://noctua-gkbv.onrender.com">noctua-gkbv.on
 <br>
 <table>
 <tr>
-<td width="50%" valign="top"><img src="docs/img/gif/graduate.gif" alt="See how Noctua learns, as recorded: first run, learn, verify, the same request with zero model calls, an attacker's request blocked"><br><sub><b>See how Noctua learns</b>, one click, the whole loop. Sped up 3×.</sub></td>
-<td width="50%" valign="top"><img src="docs/img/gif/route-preview.gif" alt="Typing in the composer: BLOCKED, FREE, ASKS FIRST"><br><sub><b>Know before you send.</b> The route line, decided by the real router and policy with no model call.</sub></td>
+<td width="50%" valign="top"><a href="https://noctua-gkbv.onrender.com/app"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/gif/graduate.gif" alt="See how Noctua learns, as recorded: first run, learn, verify, the same request with zero model calls, an attacker's request blocked"></a><br><sub><b>See how Noctua learns</b>, one click, the whole loop. Sped up 3×.</sub></td>
+<td width="50%" valign="top"><a href="https://noctua-gkbv.onrender.com/app"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/gif/route-preview.gif" alt="Typing in the composer: BLOCKED, FREE, ASKS FIRST"></a><br><sub><b>Know before you send.</b> The route line, decided by the real router and policy with no model call.</sub></td>
 </tr>
 <tr>
-<td width="50%" valign="top"><img src="docs/img/gif/approve.gif" alt="Reply to Priya: drafted, waiting, approved"><br><sub><b>Approve.</b> Sped up 2.5×.</sub></td>
-<td width="50%" valign="top"><img src="docs/img/gif/muse-replay.gif" alt="Muse Replay as recorded"><br><sub><b>Muse Replay.</b> Sped up 2.5×.</sub></td>
+<td width="50%" valign="top"><a href="https://noctua-gkbv.onrender.com/app"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/gif/approve.gif" alt="Reply to Priya: drafted, waiting, approved"></a><br><sub><b>Approve.</b> Sped up 2.5×.</sub></td>
+<td width="50%" valign="top"><a href="https://noctua-gkbv.onrender.com/app"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/gif/muse-replay.gif" alt="Muse Replay as recorded"></a><br><sub><b>Muse Replay.</b> Sped up 2.5×.</sub></td>
 </tr>
 <tr>
-<td width="50%" valign="top"><img src="docs/img/gif/attack-night.gif" alt="Attack Night as recorded"><br><sub><b>Attack Night.</b></sub></td>
-<td width="50%" valign="top"><img src="docs/img/gif/landing.gif" alt="The landing page: intro, headline, and the hidden-email scroll story"><br><sub><b>The landing page</b> and its hidden-email story.</sub></td>
+<td width="50%" valign="top"><a href="https://noctua-gkbv.onrender.com/security"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/gif/attack-night.gif" alt="Attack Night as recorded"></a><br><sub><b>Attack Night.</b></sub></td>
+<td width="50%" valign="top"><a href="https://noctua-gkbv.onrender.com/"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/gif/landing.gif" alt="The landing page: intro, headline, and the hidden-email scroll story"></a><br><sub><b>The landing page</b> and its hidden-email story.</sub></td>
 </tr>
 </table>
 </details>
@@ -146,32 +146,32 @@ learned. The end card: <a href="https://noctua-gkbv.onrender.com">noctua-gkbv.on
 <br>
 <table>
 <tr>
-<td width="50%" valign="top"><img src="docs/img/chat-start.png" alt="Chat start screen: Reason once. Then never again."><br><sub><b>Chat.</b> One screen, a ChatGPT-style composer, and the actions in the + menu.</sub></td>
-<td width="50%" valign="top"><img src="docs/img/approval.png" alt="A reply in the chat: urgent items, a set-aside phishing email, and a drafted email waiting for approval"><br><sub><b>A reply.</b> Plain text: what's urgent, what needs a reply, the email it set aside, and the draft waiting for you.</sub></td>
+<td width="50%" valign="top"><a href="https://noctua-gkbv.onrender.com/app"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/chat-start.png" alt="Chat start screen: Reason once. Then never again."></a><br><sub><b>Chat.</b> One screen, a ChatGPT-style composer, and the actions in the + menu.</sub></td>
+<td width="50%" valign="top"><a href="https://noctua-gkbv.onrender.com/app"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/approval.png" alt="A reply in the chat: urgent items, a set-aside phishing email, and a drafted email waiting for approval"></a><br><sub><b>A reply.</b> Plain text: what's urgent, what needs a reply, the email it set aside, and the draft waiting for you.</sub></td>
 </tr>
 <tr>
-<td width="50%" valign="top"><img src="docs/img/muse-draft.png" alt="Noctua handling the Marketplace listing: the buyer thread, a safe drafted reply, and Approve or Discard"><br><sub><b>Marketplace.</b> The buyer asks for the address; the draft declines and suggests a public meeting point.</sub></td>
-<td width="50%" valign="top"><img src="docs/img/approved.png" alt="Approved and sent: the email was written to the local outbox"><br><sub><b>Approved.</b> Written to the local outbox, never delivered: there is no mail integration.</sub></td>
+<td width="50%" valign="top"><a href="https://noctua-gkbv.onrender.com/app"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/muse-draft.png" alt="Noctua handling the Marketplace listing: the buyer thread, a safe drafted reply, and Approve or Discard"></a><br><sub><b>Marketplace.</b> The buyer asks for the address; the draft declines and suggests a public meeting point.</sub></td>
+<td width="50%" valign="top"><a href="https://noctua-gkbv.onrender.com/app"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/approved.png" alt="Approved and sent: the email was written to the local outbox"></a><br><sub><b>Approved.</b> Written to the local outbox, never delivered: there is no mail integration.</sub></td>
 </tr>
 <tr>
-<td width="50%" valign="top"><img src="docs/img/skills.png" alt="Skills page: verified count, candidates, free runs today, calls saved today"><br><sub><b>Skills.</b> What it has learned, and what that saved today.</sub></td>
-<td width="50%" valign="top"><img src="docs/img/skill.png" alt="Skill detail: Daily inbox triage v1, evaluation passed, every mandatory check listed"><br><sub><b>A skill.</b> Every check it had to pass, its signature, and the learned rules.</sub></td>
+<td width="50%" valign="top"><a href="https://noctua-gkbv.onrender.com/skills"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/skills.png" alt="Skills page: verified count, candidates, free runs today, calls saved today"></a><br><sub><b>Skills.</b> What it has learned, and what that saved today.</sub></td>
+<td width="50%" valign="top"><a href="https://noctua-gkbv.onrender.com/skills"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/skill.png" alt="Skill detail: Daily inbox triage v1, evaluation passed, every mandatory check listed"></a><br><sub><b>A skill.</b> Every check it had to pass, its signature, and the learned rules.</sub></td>
 </tr>
 <tr>
-<td width="50%" valign="top"><img src="docs/img/security.png" alt="Security page: Attack Night 10/10, blocked today, risk points left, policy rules"><br><sub><b>Security.</b> Attack Night, the risk budget, the rules, and every decision the engine made.</sub></td>
-<td width="50%" valign="top"><img src="docs/img/receipts.png" alt="Receipts page: first time $0.0007, every repeat $0, cost by execution path, history"><br><sub><b>Receipts.</b> Real cost per path, from API-reported token usage.</sub></td>
+<td width="50%" valign="top"><a href="https://noctua-gkbv.onrender.com/security"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/security.png" alt="Security page: Attack Night 10/10, blocked today, risk points left, policy rules"></a><br><sub><b>Security.</b> Attack Night, the risk budget, the rules, and every decision the engine made.</sub></td>
+<td width="50%" valign="top"><a href="https://noctua-gkbv.onrender.com/receipts"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/receipts.png" alt="Receipts page: first time $0.0007, every repeat $0, cost by execution path, history"></a><br><sub><b>Receipts.</b> Real cost per path, from API-reported token usage.</sub></td>
 </tr>
 <tr>
-<td width="50%" valign="top"><img src="docs/img/task-master.png" alt="Task receipt: completed without inference, Master path, 0 model calls, 2 ms"><br><sub><b>A run with no inference.</b> Master path: 0 model calls, $0 model cost, 2 ms, compared with the measured first run.</sub></td>
-<td width="50%" valign="top"><img src="docs/img/task-apprentice.png" alt="Task receipt for a first run: the model calls, tokens, cost and the full trace"><br><sub><b>A first run.</b> Every model call, every tool call and every policy decision, in order.</sub></td>
+<td width="50%" valign="top"><a href="https://noctua-gkbv.onrender.com/receipts"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/task-master.png" alt="Task receipt: completed without inference, Master path, 0 model calls, 2 ms"></a><br><sub><b>A run with no inference.</b> Master path: 0 model calls, $0 model cost, 2 ms, compared with the measured first run.</sub></td>
+<td width="50%" valign="top"><a href="https://noctua-gkbv.onrender.com/receipts"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/task-apprentice.png" alt="Task receipt for a first run: the model calls, tokens, cost and the full trace"></a><br><sub><b>A first run.</b> Every model call, every tool call and every policy decision, in order.</sub></td>
 </tr>
 <tr>
-<td width="50%" valign="top"><img src="docs/img/memory.png" alt="Memory page: mode, remembered items, daily limits, the model provider"><br><sub><b>Memory.</b> Everything it remembers can be deleted; limits are enforced on the server.</sub></td>
+<td width="50%" valign="top"><a href="https://noctua-gkbv.onrender.com/settings"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/memory.png" alt="Memory page: mode, remembered items, daily limits, the model provider"></a><br><sub><b>Memory.</b> Everything it remembers can be deleted; limits are enforced on the server.</sub></td>
 <td width="50%" valign="top">
 <table><tr>
-<td><img src="docs/img/phone-landing.png" alt="Landing page on a phone"></td>
-<td><img src="docs/img/phone-chat.png" alt="Chat on a phone"></td>
-<td><img src="docs/img/phone-security.png" alt="Security page on a phone"></td>
+<td><a href="https://noctua-gkbv.onrender.com/"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/phone-landing.png" alt="Landing page on a phone"></a></td>
+<td><a href="https://noctua-gkbv.onrender.com/app"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/phone-chat.png" alt="Chat on a phone"></a></td>
+<td><a href="https://noctua-gkbv.onrender.com/security"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/phone-security.png" alt="Security page on a phone"></a></td>
 </tr></table>
 <sub><b>On a phone.</b> Every screen works at 390 px with no sideways scrolling.</sub>
 </td>
@@ -181,16 +181,16 @@ learned. The end card: <a href="https://noctua-gkbv.onrender.com">noctua-gkbv.on
 
 ## Measured, not claimed
 
-<p align="center"><img src="docs/img/film/measured.webp" width="88%" alt="Film: Measured. Seven runs of the same task: 15 model calls versus 9; 4 of 7 runs with zero inference; a repeat takes milliseconds; 10 known attacks, 10 stopped"></p>
+<p align="center"><a href="https://youtu.be/MitssZU897o"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/film/measured.webp" width="88%" alt="Film: Measured. Seven runs of the same task: 15 model calls versus 9; 4 of 7 runs with zero inference; a repeat takes milliseconds; 10 known attacks, 10 stopped"></a></p>
 
 Every number here comes from [`eval/results.json`](eval/results.json): a live benchmark on Nebius Token Factory
 (29 Oct 2026, `nvidia/nemotron-3-super-120b-a12b`). The same seven requests over three days of sample inbox go through
 two paths: an agent that re-reasons every time, and Noctua's graduation loop with **learning and evaluation costs
 included**. The charts are drawn from that file by [`scripts/charts.ts`](scripts/charts.ts).
 
-<p align="center"><img src="docs/img/chart-calls.svg" width="100%" alt="Model calls per run: re-reasoning uses 2 to 3 calls every run; Noctua uses 2 on the first run, then 0 on four of the remaining six runs, and 2 on the two runs where the skill was demoted and re-learned"></p>
+<p align="center"><a href="https://noctua-gkbv.onrender.com/receipts"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/chart-calls.svg" width="100%" alt="Model calls per run: re-reasoning uses 2 to 3 calls every run; Noctua uses 2 on the first run, then 0 on four of the remaining six runs, and 2 on the two runs where the skill was demoted and re-learned"></a></p>
 
-<p align="center"><img src="docs/img/chart-totals.svg" width="100%" alt="Seven runs: 15 model calls versus 9, $0.0057 versus $0.0040, 0 versus 4 runs with zero inference; 30% less spend; accuracy 96% on both paths, 0 urgent messages missed"></p>
+<p align="center"><a href="https://noctua-gkbv.onrender.com/receipts"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/chart-totals.svg" width="100%" alt="Seven runs: 15 model calls versus 9, $0.0057 versus $0.0040, 0 versus 4 runs with zero inference; 30% less spend; accuracy 96% on both paths, 0 urgent messages missed"></a></p>
 
 | | Re-reason every time | Noctua |
 |---|---|---|
@@ -218,7 +218,7 @@ no inference on Noctua and costs about $0.0008 in model spend when re-reasoned (
 re-reasoning agent spends about $0.024 in model calls on this one task, and Noctua's model spend stays at zero after the
 skill is verified, for as long as it stays verified. Hosting and storage are not included on either side.
 
-<p align="center"><img src="docs/img/chart-attacks.svg" width="100%" alt="Attack Night: 10 of 10 attacks stopped: email exfiltration, web override, tool output chaining, risk budget, malformed calls, approval replay, skill tampering, skill irreversible, Muse lowball, Muse address"></p>
+<p align="center"><a href="https://noctua-gkbv.onrender.com/security"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/chart-attacks.svg" width="100%" alt="Attack Night: 10 of 10 attacks stopped: email exfiltration, web override, tool output chaining, risk budget, malformed calls, approval replay, skill tampering, skill irreversible, Muse lowball, Muse address"></a></p>
 
 **Limits, stated plainly.** This is a reproducible **proof of mechanism**, not a general accuracy benchmark. The sample
 workspace is synthetic and was written by the author, labels included: 3 days, 21 messages, plus a 10-message
@@ -229,7 +229,7 @@ also why they drift; the runtime checks exist to catch that. Full methodology: [
 
 ## Same job, different agent
 
-<p align="center"><img src="docs/img/film/compare.webp" width="88%" alt="Film: Same job. Different agent. Meta Muse, OpenAI dots and xAI Grok Bot, each beside Noctua's answer"></p>
+<p align="center"><a href="https://youtu.be/MitssZU897o"><img src="https://cdn.jsdelivr.net/gh/Aaditya1273/Noctua@main/docs/img/film/compare.webp" width="88%" alt="Film: Same job. Different agent. Meta Muse, OpenAI dots and xAI Grok Bot, each beside Noctua's answer"></a></p>
 
 | | On the record | Noctua |
 |---|---|---|
